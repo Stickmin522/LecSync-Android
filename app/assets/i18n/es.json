@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Falló la escritura de audio, verifique el espacio de almacenamiento",
   "音频采集初始化失败": "Falló la inicialización de la captura de audio",
   "麦克风读取失败": "Error de lectura del micrófono",
-  "LecSync 控制台": "Consola de LecSync"
+  "LecSync 控制台": "Consola de LecSync",
+  "复制": "Copiar",
+  "编辑": "Editar",
+  "保存": "Guardar",
+  "编辑原文": "Editar el texto original",
+  "编辑译文": "Editar la traducción"
 }

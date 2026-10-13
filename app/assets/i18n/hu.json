@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "A hangírás nem sikerült, ellenőrizze a tárhelyet",
   "音频采集初始化失败": "A hangrögzítés inicializálása nem sikerült",
   "麦克风读取失败": "A mikrofon olvasása nem sikerült",
-  "LecSync 控制台": "LecSync konzol"
+  "LecSync 控制台": "LecSync konzol",
+  "复制": "Másolás",
+  "编辑": "Szerkesztés",
+  "保存": "Mentés",
+  "编辑原文": "Eredeti szöveg szerkesztése",
+  "编辑译文": "Fordítás szerkesztése"
 }

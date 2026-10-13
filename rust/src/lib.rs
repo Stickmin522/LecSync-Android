@@ -1,3 +1,4 @@
+mod caption_edits;
 mod captions;
 mod languages;
 mod transport;
@@ -50,6 +51,7 @@ struct View {
     level: f64,
     segments: Vec<Segment>,
     captions: Vec<captions::Caption>,
+    caption_edits: caption_edits::Edits,
     next_caption_id: u64,
     structured_preview: bool,
     connection: String,
@@ -189,12 +191,12 @@ fn snapshot() -> View {
     if let Ok(e) = ENGINE.lock() {
         if let Some(e) = e.as_ref() {
             if let Ok(v) = e.view.lock() {
-                return v.clone();
+                return caption_edits::render(&v);
             }
         }
     }
     LAST.lock()
-        .map(|x| x.clone())
+        .map(|x| caption_edits::render(&x))
         .unwrap_or_else(|_| View::idle())
 }
 fn error_for_status(status: u16) -> String {
@@ -526,6 +528,10 @@ fn save(view: &Arc<Mutex<View>>, directory: &str) -> Result<(), String> {
     // Digest translation and periodic checkpoints share each record's atomic temp file.
     let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
     let v = view.lock().map_err(|_| "字幕状态读取失败")?.clone();
+    write_record(&v, directory)
+}
+// The caller holds FILE_WRITE_LOCK across reading, editing and writing a record.
+fn write_record(v: &View, directory: &str) -> Result<(), String> {
     let path = Path::new(directory).join(format!("{}.json", v.id));
     let tmp = path.with_extension("tmp");
     fs::write(&tmp, serde_json::to_vec(&v).map_err(|_| "字幕编码失败")?)
@@ -654,6 +660,7 @@ fn command(input: &str) -> Result<Value, String> {
     let op = req["op"].as_str().unwrap_or("");
     match op {
         "snapshot" => Ok(json!(snapshot())),
+        "editCaption" => caption_edits::command(&req),
         "warn" | "fail" => {
             let e = ENGINE.lock().map_err(|_| "状态异常")?;
             let message = req["message"].as_str().unwrap_or("录音发生错误");
@@ -695,13 +702,18 @@ fn command(input: &str) -> Result<Value, String> {
                 }
             }
             drop(engine);
+            let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
             let mut v = load(directory, id)?;
             if v.sections == raw {
                 v.chinese_sections = translated;
                 v.chinese_digest_source = raw;
                 v.digest_translated = req["translated"] == true;
-                let shared = Arc::new(Mutex::new(v));
-                save(&shared, directory)?;
+                write_record(&v, directory)?;
+                if let Ok(mut last) = LAST.lock() {
+                    if last.id == id {
+                        *last = v;
+                    }
+                }
             }
             Ok(json!({"ok":true}))
         }
@@ -829,7 +841,7 @@ fn command(input: &str) -> Result<Value, String> {
                                     v.phase = "ended".into();
                                     v.warning = "上次录音中断，已恢复最后保存的内容".into();
                                 }
-                                records.push(v)
+                                records.push(caption_edits::render(&v))
                             }
                         }
                     }
@@ -843,7 +855,7 @@ fn command(input: &str) -> Result<Value, String> {
             let id = req["id"].as_str().ok_or("缺少记录 ID")?;
             let v = load(directory, id)?;
             if op == "load" {
-                return Ok(json!(v));
+                return Ok(json!(caption_edits::render(&v)));
             }
             if op == "delete" {
                 if snapshot().id == id && !["idle", "ended"].contains(&snapshot().phase.as_str()) {
@@ -855,6 +867,7 @@ fn command(input: &str) -> Result<Value, String> {
                 return Ok(json!({"ok":true}));
             }
             let format = req["format"].as_str().unwrap_or("txt");
+            let v = caption_edits::render(&v);
             let content = match format {
                 "srt" => srt(&v.segments)?,
                 "json" => serde_json::to_string_pretty(&v).map_err(|_| "导出失败")?,

@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Zapis audio nie powiódł się. Sprawdź ilość wolnego miejsca",
   "音频采集初始化失败": "Inicjalizacja przechwytywania dźwięku nie powiodła się",
   "麦克风读取失败": "Odczyt mikrofonu nie powiódł się",
-  "LecSync 控制台": "Konsola LecSync"
+  "LecSync 控制台": "Konsola LecSync",
+  "复制": "Kopiuj",
+  "编辑": "Edytuj",
+  "保存": "Zapisz",
+  "编辑原文": "Edytuj tekst oryginalny",
+  "编辑译文": "Edytuj tłumaczenie"
 }

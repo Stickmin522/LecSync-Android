@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Äänen kirjoittaminen epäonnistui, tarkista tallennustila",
   "音频采集初始化失败": "Äänikaappauksen alustus epäonnistui",
   "麦克风读取失败": "Mikrofonin luku epäonnistui",
-  "LecSync 控制台": "LecSync-konsoli"
+  "LecSync 控制台": "LecSync-konsoli",
+  "复制": "Kopioi",
+  "编辑": "Muokkaa",
+  "保存": "Tallenna",
+  "编辑原文": "Muokkaa alkuperäistä tekstiä",
+  "编辑译文": "Muokkaa käännöstä"
 }

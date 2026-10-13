@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Səs yazısı alınmadı, yaddaş yerini yoxlayın",
   "音频采集初始化失败": "Audio çəkilişin işə salınması uğursuz oldu",
   "麦克风读取失败": "Mikrofon oxumaq alınmadı",
-  "LecSync 控制台": "LecSync konsolu"
+  "LecSync 控制台": "LecSync konsolu",
+  "复制": "Kopyala",
+  "编辑": "Redaktə et",
+  "保存": "Yadda saxla",
+  "编辑原文": "Orijinal mətni redaktə et",
+  "编辑译文": "Tərcüməni redaktə et"
 }

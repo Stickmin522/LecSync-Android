@@ -25,6 +25,14 @@ class OverlayFrame(context: Context, private val service: SessionService) : Fram
     private var lastTapY = 0f
     private val density = resources.displayMetrics.density
     private var docked = false
+    internal var textInputActive = false
+        set(value) {
+            field = value
+            mode = 0
+            resizeCorner = null
+            lastTap = 0L
+            if (value) service.overlayInteraction(false)
+        }
     private val dockHandle = View(context).apply {
         background = GradientDrawable().apply {
             setColor(Color.rgb(36, 92, 232)); cornerRadius = 8*density
@@ -56,6 +64,9 @@ class OverlayFrame(context: Context, private val service: SessionService) : Fram
         Choreographer.getInstance().postFrameCallback { scheduled=false; service.applyOverlayLayout() }
     }
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // Text menus, selection and the editor belong to Flutter while the window
+        // is focusable. Their touches must not resize, move or collapse the window.
+        if (textInputActive) return super.dispatchTouchEvent(event)
         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
             // Keep the corner hit areas clear of the return/close button centers.
             resizeCorner = OverlayResize.cornerAt(event.x, event.y, width, height, 20*density)
@@ -82,7 +93,9 @@ class OverlayFrame(context: Context, private val service: SessionService) : Fram
             val tapped=kotlin.math.abs(event.rawX-startX)<ViewConfiguration.get(context).scaledTouchSlop &&
                 kotlin.math.abs(event.rawY-startY)<ViewConfiguration.get(context).scaledTouchSlop
             if(mode==5 && tapped && event.actionMasked==MotionEvent.ACTION_UP)service.restoreOverlayFromDock()
-            if(mode==1 && !tapped && event.actionMasked==MotionEvent.ACTION_UP)service.dockOverlayAtEdge()
+            if(mode==1 && !tapped && event.actionMasked==MotionEvent.ACTION_UP){
+                service.finishOverlayDrag(origin,event.rawX-startX,event.rawY-startY)
+            }
             if(mode==1 && event.actionMasked==MotionEvent.ACTION_UP && tapped){
                 if(lastTap>0 && event.eventTime-lastTap<=ViewConfiguration.getDoubleTapTimeout() &&
                     kotlin.math.abs(event.rawX-lastTapX)<40*density && kotlin.math.abs(event.rawY-lastTapY)<40*density){

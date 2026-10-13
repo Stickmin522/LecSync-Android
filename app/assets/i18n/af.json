@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Oudioskryf het misluk, kyk asseblief na die stoorspasie",
   "音频采集初始化失败": "Inisialisering van oudio-opname het misluk",
   "麦克风读取失败": "Mikrofoonlees het misluk",
-  "LecSync 控制台": "LecSync-konsole"
+  "LecSync 控制台": "LecSync-konsole",
+  "复制": "Kopieer",
+  "编辑": "Wysig",
+  "保存": "Stoor",
+  "编辑原文": "Wysig oorspronklike teks",
+  "编辑译文": "Wysig vertaling"
 }

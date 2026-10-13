@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Ljudskrivning misslyckades, kontrollera lagringsutrymmet",
   "音频采集初始化失败": "Ljudinspelningsinitiering misslyckades",
   "麦克风读取失败": "Mikrofonläsning misslyckades",
-  "LecSync 控制台": "LecSync-konsol"
+  "LecSync 控制台": "LecSync-konsol",
+  "复制": "Kopiera",
+  "编辑": "Redigera",
+  "保存": "Spara",
+  "编辑原文": "Redigera originaltexten",
+  "编辑译文": "Redigera översättningen"
 }

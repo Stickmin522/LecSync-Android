@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Methu ysgrifennu sain, gwiriwch y gofod storio",
   "音频采集初始化失败": "Methodd cychwyn cipio sain",
   "麦克风读取失败": "Darlleniad meicroffon wedi methu",
-  "LecSync 控制台": "Consol LecSync"
+  "LecSync 控制台": "Consol LecSync",
+  "复制": "Copïo",
+  "编辑": "Golygu",
+  "保存": "Cadw",
+  "编辑原文": "Golygu’r testun gwreiddiol",
+  "编辑译文": "Golygu’r cyfieithiad"
 }

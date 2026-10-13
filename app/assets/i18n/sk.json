@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Zápis zvuku zlyhal, skontrolujte úložný priestor",
   "音频采集初始化失败": "Inicializácia záznamu zvuku zlyhala",
   "麦克风读取失败": "Čítanie mikrofónu zlyhalo",
-  "LecSync 控制台": "Konzola LecSync"
+  "LecSync 控制台": "Konzola LecSync",
+  "复制": "Kopírovať",
+  "编辑": "Upraviť",
+  "保存": "Uložiť",
+  "编辑原文": "Upraviť pôvodný text",
+  "编辑译文": "Upraviť preklad"
 }

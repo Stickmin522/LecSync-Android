@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Audio-idazketa huts egin du, egiaztatu biltegiratze lekua",
   "音频采集初始化失败": "Audio-harrapaketaren hasierak huts egin du",
   "麦克风读取失败": "Mikrofonoaren irakurketa huts egin du",
-  "LecSync 控制台": "LecSync kontsola"
+  "LecSync 控制台": "LecSync kontsola",
+  "复制": "Kopiatu",
+  "编辑": "Editatu",
+  "保存": "Gorde",
+  "编辑原文": "Editatu jatorrizko testua",
+  "编辑译文": "Editatu itzulpena"
 }

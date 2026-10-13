@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Das Schreiben der Audiodaten ist fehlgeschlagen. Bitte überprüfen Sie den Speicherplatz",
   "音频采集初始化失败": "Die Initialisierung der Audioaufnahme ist fehlgeschlagen",
   "麦克风读取失败": "Das Lesen des Mikrofons ist fehlgeschlagen",
-  "LecSync 控制台": "LecSync-Konsole"
+  "LecSync 控制台": "LecSync-Konsole",
+  "复制": "Kopieren",
+  "编辑": "Bearbeiten",
+  "保存": "Speichern",
+  "编辑原文": "Originaltext bearbeiten",
+  "编辑译文": "Übersetzung bearbeiten"
 }

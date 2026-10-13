@@ -34,7 +34,14 @@ class PlatformDesk {
   ]) async {
     final raw = await channel.invokeMethod<String>(method, jsonEncode(args));
     final value = jsonDecode(raw ?? '{}');
-    if (value is Map && value['error'] != null) throw Exception(value['error']);
+    // Saved/live records carry an error status of their own. Only a failure
+    // response without a record ID should fail the requested operation.
+    if (value is Map && !value.containsKey('id')) {
+      final error = value['error'];
+      if (error != null && error.toString().isNotEmpty) {
+        throw Exception(error);
+      }
+    }
     return value;
   }
 }
@@ -1209,7 +1216,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'LingoDesk 1.2.1 · Android 10–17 · ARM64',
+              'LingoDesk 1.2.2 · Android 10–17 · ARM64',
               style: TextStyle(fontSize: 12, height: 1.8),
             ),
           ],
@@ -1235,9 +1242,120 @@ class CaptionFeed extends StatefulWidget {
 class _CaptionFeedState extends State<CaptionFeed> {
   final scroll = ScrollController();
   bool follow = true;
+  bool actionsOpen = false;
+  Map<String, dynamic>? editedRecord;
+
+  Future<void> textActions(
+    Map row,
+    String rowType,
+    String field,
+    String text,
+  ) async {
+    if (actionsOpen) return;
+    actionsOpen = true;
+    final recordId = (editedRecord ?? widget.record)['id'] as String? ?? '';
+    final rowId = row['id'] as String? ?? '';
+    final canEdit = recordId.isNotEmpty && rowId.isNotEmpty;
+    try {
+      if (widget.floating) {
+        await PlatformDesk.call('overlayTextInput', {'enabled': true});
+      }
+      if (!mounted) return;
+      final action = await showDialog<String>(
+        context: context,
+        useSafeArea: !widget.floating,
+        builder: (context) => Dialog(
+          constraints: const BoxConstraints(minWidth: 0, maxWidth: 360),
+          insetPadding: EdgeInsets.all(widget.floating ? 4 : 24),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextButton.icon(
+                  onPressed: () => Navigator.pop(context, 'copy'),
+                  icon: const Icon(Icons.copy_rounded, size: 18),
+                  label: Text(tr('复制')),
+                ),
+                if (canEdit)
+                  TextButton.icon(
+                    onPressed: () => Navigator.pop(context, 'edit'),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: Text(tr('编辑')),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (action == 'copy') {
+        await Clipboard.setData(ClipboardData(text: text));
+      } else if (action == 'edit' && mounted) {
+        await showDialog<void>(
+          context: context,
+          useSafeArea: !widget.floating,
+          barrierDismissible: false,
+          builder: (context) => _CaptionEditor(
+            title: tr(field == 'text' ? '编辑原文' : '编辑译文'),
+            text: text,
+            floating: widget.floating,
+            save: (value) async {
+              final updated = await PlatformDesk.call('core', {
+                'op': 'editCaption',
+                'id': recordId,
+                'rowId': rowId,
+                'rowType': rowType,
+                'field': field,
+                'value': value,
+              });
+              if (mounted) {
+                setState(
+                  () =>
+                      editedRecord = Map<String, dynamic>.from(updated as Map),
+                );
+              }
+            },
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          useSafeArea: !widget.floating,
+          builder: (context) => Dialog(
+            constraints: const BoxConstraints(minWidth: 0, maxWidth: 360),
+            insetPadding: EdgeInsets.all(widget.floating ? 4 : 24),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_captionError(error)),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(tr('取消')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (widget.floating) {
+        await PlatformDesk.call('overlayTextInput', {
+          'enabled': false,
+        }).catchError((_) => null);
+      }
+      actionsOpen = false;
+    }
+  }
+
   void bottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && follow && scroll.hasClients) {
+      if (mounted && follow && !actionsOpen && scroll.hasClients) {
         scroll.jumpTo(scroll.position.maxScrollExtent);
       }
     });
@@ -1246,6 +1364,7 @@ class _CaptionFeedState extends State<CaptionFeed> {
   @override
   void didUpdateWidget(CaptionFeed old) {
     super.didUpdateWidget(old);
+    if (!identical(old.record, widget.record)) editedRecord = null;
     if (follow) bottom();
   }
 
@@ -1257,14 +1376,13 @@ class _CaptionFeedState extends State<CaptionFeed> {
 
   @override
   Widget build(BuildContext context) {
-    final captions = widget.record['captions'] as List?;
+    final record = editedRecord ?? widget.record;
+    final captions = record['captions'] as List?;
     final list = captions?.isNotEmpty == true
         ? captions!
-        : widget.record['segments'] as List? ?? [];
+        : record['segments'] as List? ?? [];
     final displayRows = captions?.isNotEmpty == true;
-    final preview = displayRows
-        ? ''
-        : widget.record['preview'] as String? ?? '';
+    final preview = displayRows ? '' : record['preview'] as String? ?? '';
     final mode = widget.settings['captionMode'];
     final requestedFont = (widget.settings['fontSize'] as num? ?? 20)
         .toDouble();
@@ -1292,7 +1410,7 @@ class _CaptionFeedState extends State<CaptionFeed> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  widget.record['phase'] == 'recording'
+                  record['phase'] == 'recording'
                       ? tr('正在聆听…')
                       : tr('听到的内容，在这里出现'),
                   textAlign: TextAlign.center,
@@ -1352,9 +1470,9 @@ class _CaptionFeedState extends State<CaptionFeed> {
                 final s = i == list.length
                     ? {
                         'text': preview,
-                        'translation': widget.record['previewTranslation'],
+                        'translation': record['previewTranslation'],
                         'speaker': '',
-                        'startMs': widget.record['durationMs'],
+                        'startMs': record['durationMs'],
                       }
                     : list[i] as Map;
                 return Padding(
@@ -1377,6 +1495,12 @@ class _CaptionFeedState extends State<CaptionFeed> {
                           (s['text'] as String? ?? '').isNotEmpty)
                         SelectableText(
                           s['text'] as String,
+                          onTap: () => textActions(
+                            s,
+                            displayRows ? 'caption' : 'segment',
+                            'text',
+                            s['text'] as String,
+                          ),
                           textDirection: contentDirection(s['text'] as String),
                           style: TextStyle(
                             fontSize: font - 2,
@@ -1390,6 +1514,12 @@ class _CaptionFeedState extends State<CaptionFeed> {
                           (s['translation'] as String? ?? '').isNotEmpty)
                         SelectableText(
                           s['translation'] as String,
+                          onTap: () => textActions(
+                            s,
+                            displayRows ? 'caption' : 'segment',
+                            'translation',
+                            s['translation'] as String,
+                          ),
                           textDirection: contentDirection(
                             s['translation'] as String,
                           ),
@@ -1419,6 +1549,125 @@ class _CaptionFeedState extends State<CaptionFeed> {
       ],
     );
   }
+}
+
+String _captionError(Object error) => tr(
+  error is PlatformException
+      ? (error.message ?? '操作失败')
+      : error.toString().replaceFirst('Exception: ', ''),
+);
+
+class _CaptionEditor extends StatefulWidget {
+  const _CaptionEditor({
+    required this.title,
+    required this.text,
+    required this.floating,
+    required this.save,
+  });
+  final String title, text;
+  final bool floating;
+  final Future<void> Function(String) save;
+  @override
+  State<_CaptionEditor> createState() => _CaptionEditorState();
+}
+
+class _CaptionEditorState extends State<_CaptionEditor> {
+  late final controller = TextEditingController(text: widget.text);
+  bool saving = false;
+  String? error;
+
+  Future<void> save() async {
+    if (saving) return;
+    setState(() {
+      saving = true;
+      error = null;
+    });
+    try {
+      await widget.save(controller.text);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) setState(() => error = _captionError(e));
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: !saving,
+    child: Dialog(
+      constraints: const BoxConstraints(minWidth: 0, maxWidth: 560),
+      insetPadding: EdgeInsets.all(widget.floating ? 4 : 24),
+      child: Padding(
+        padding: EdgeInsets.all(widget.floating ? 4 : 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      readOnly: saving,
+                      minLines: 1,
+                      maxLines: widget.floating ? 3 : 8,
+                      decoration: InputDecoration(labelText: widget.title),
+                    ),
+                    if (error != null)
+                      Text(
+                        error!,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: saving ? null : () => Navigator.pop(context),
+                    child: Text(
+                      tr('取消'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: saving ? null : save,
+                    child: saving
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            tr('保存'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class FloatingDesk extends StatefulWidget {

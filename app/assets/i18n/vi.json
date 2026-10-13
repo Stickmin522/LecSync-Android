@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Ghi âm không thành công, vui lòng kiểm tra dung lượng lưu trữ",
   "音频采集初始化失败": "Khởi tạo thu âm không thành công",
   "麦克风读取失败": "Không đọc được micrô",
-  "LecSync 控制台": "Bảng điều khiển LecSync"
+  "LecSync 控制台": "Bảng điều khiển LecSync",
+  "复制": "Sao chép",
+  "编辑": "Chỉnh sửa",
+  "保存": "Lưu",
+  "编辑原文": "Chỉnh sửa văn bản gốc",
+  "编辑译文": "Chỉnh sửa bản dịch"
 }

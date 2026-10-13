@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "audio ierakstīšana neizdevās, lūdzu, pārbaudiet krātuves vietu",
   "音频采集初始化失败": "audio uztveršanas inicializācija neizdevās",
   "麦克风读取失败": "neizdevās nolasīt mikrofonu",
-  "LecSync 控制台": "LecSync konsole"
+  "LecSync 控制台": "LecSync konsole",
+  "复制": "Kopēt",
+  "编辑": "Rediģēt",
+  "保存": "Saglabāt",
+  "编辑原文": "Rediģēt oriģinālo tekstu",
+  "编辑译文": "Rediģēt tulkojumu"
 }

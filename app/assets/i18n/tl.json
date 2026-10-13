@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Nabigo ang pagsulat ng audio, pakisuri ang espasyo sa imbakan",
   "音频采集初始化失败": "Nabigo ang pagsisimula ng pagkuha ng audio",
   "麦克风读取失败": "Nabigo ang pagbasa ng mikropono",
-  "LecSync 控制台": "LecSync console"
+  "LecSync 控制台": "LecSync console",
+  "复制": "Kopyahin",
+  "编辑": "I-edit",
+  "保存": "I-save",
+  "编辑原文": "I-edit ang orihinal na teksto",
+  "编辑译文": "I-edit ang salin"
 }

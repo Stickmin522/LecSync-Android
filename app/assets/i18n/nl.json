@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Het schrijven van audio is mislukt. Controleer de opslagruimte",
   "音频采集初始化失败": "Initialisatie van audio-opname mislukt",
   "麦克风读取失败": "Microfoonlezen mislukt",
-  "LecSync 控制台": "LecSync-console"
+  "LecSync 控制台": "LecSync-console",
+  "复制": "Kopiëren",
+  "编辑": "Bewerken",
+  "保存": "Opslaan",
+  "编辑原文": "Oorspronkelijke tekst bewerken",
+  "编辑译文": "Vertaling bewerken"
 }

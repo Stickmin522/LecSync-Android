@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Scrierea audio a eșuat, vă rugăm să verificați spațiul de stocare",
   "音频采集初始化失败": "Inițializarea capturii audio a eșuat",
   "麦克风读取失败": "Citirea microfonului a eșuat",
-  "LecSync 控制台": "Consola LecSync"
+  "LecSync 控制台": "Consola LecSync",
+  "复制": "Copiază",
+  "编辑": "Editează",
+  "保存": "Salvează",
+  "编辑原文": "Editează textul original",
+  "编辑译文": "Editează traducerea"
 }

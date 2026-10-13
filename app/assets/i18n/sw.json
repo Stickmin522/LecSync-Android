@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Uandishi wa sauti umeshindwa, tafadhali angalia nafasi ya kuhifadhi",
   "音频采集初始化失败": "Uanzishaji wa kunasa sauti haukufaulu",
   "麦克风读取失败": "Imeshindwa kusoma maikrofoni",
-  "LecSync 控制台": "Dashibodi ya LecSync"
+  "LecSync 控制台": "Dashibodi ya LecSync",
+  "复制": "Nakili",
+  "编辑": "Hariri",
+  "保存": "Hifadhi",
+  "编辑原文": "Hariri maandishi asili",
+  "编辑译文": "Hariri tafsiri"
 }

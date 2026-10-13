@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Zápis zvuku se nezdařil, zkontrolujte úložný prostor",
   "音频采集初始化失败": "Inicializace zachycení zvuku se nezdařila",
   "麦克风读取失败": "Čtení mikrofonu se nezdařilo",
-  "LecSync 控制台": "Konzole LecSync"
+  "LecSync 控制台": "Konzole LecSync",
+  "复制": "Kopírovat",
+  "编辑": "Upravit",
+  "保存": "Uložit",
+  "编辑原文": "Upravit původní text",
+  "编辑译文": "Upravit překlad"
 }

@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "nepavyko įrašyti garso, patikrinkite saugyklos vietą",
   "音频采集初始化失败": "nepavyko inicijuoti garso įrašymo",
   "麦克风读取失败": "nepavyko nuskaityti mikrofono",
-  "LecSync 控制台": "LecSync konsolė"
+  "LecSync 控制台": "LecSync konsolė",
+  "复制": "Kopijuoti",
+  "编辑": "Redaguoti",
+  "保存": "Išsaugoti",
+  "编辑原文": "Redaguoti originalų tekstą",
+  "编辑译文": "Redaguoti vertimą"
 }

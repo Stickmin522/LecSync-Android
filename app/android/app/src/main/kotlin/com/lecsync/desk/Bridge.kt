@@ -38,6 +38,7 @@ class Bridge(private val context: Context, engine: FlutterEngine, private val ac
                     "openLecSyncConsole" -> if(activity != null) { activity.openLecSyncConsole(); result.success("{}") } else result.error("foreground","请在设置页面打开控制台",null)
                     "closeOverlay" -> { SessionService.instance?.dismissOverlay(); result.success("{}") }
                     "overlayControls" -> { SessionService.instance?.setOverlayControlsVisible(input.optBoolean("visible")); result.success("{}") }
+                    "overlayTextInput" -> { SessionService.instance?.setOverlayTextInput(input.optBoolean("enabled")); result.success("{}") }
                     "digest", "digestRetry" -> {
                         input.put("op","load").put("directory",SettingsStore.directory(context))
                         executor.execute{val view=JSONObject(NativeCore.command(input.toString()));handler.post{result.success(ChineseDigest.decorate(context,view,call.method=="digestRetry").toString())}}
@@ -52,7 +53,7 @@ class Bridge(private val context: Context, engine: FlutterEngine, private val ac
                         if(input.optString("op")=="test") input.put("config",SettingsStore.config(context))
                         executor.execute {
                             val output=runCatching { NativeCore.command(input.toString()) }
-                            handler.post { output.fold({ result.success(it) },{ result.error("core","底层操作失败",null) }) }
+                            handler.post { output.fold({ result.success(it); if(input.optString("op")=="editCaption" && JSONObject(it).has("id")) broadcast() },{ result.error("core","底层操作失败",null) }) }
                         }
                     }
                     else -> result.notImplemented()

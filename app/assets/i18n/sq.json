@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Shkrimi i audios dështoi, ju lutemi kontrolloni hapësirën e ruajtjes",
   "音频采集初始化失败": "Inicializimi i regjistrimit të audios dështoi",
   "麦克风读取失败": "Leximi i mikrofonit dështoi",
-  "LecSync 控制台": "Konsola LecSync"
+  "LecSync 控制台": "Konsola LecSync",
+  "复制": "Kopjo",
+  "编辑": "Redakto",
+  "保存": "Ruaj",
+  "编辑原文": "Redakto tekstin origjinal",
+  "编辑译文": "Redakto përkthimin"
 }

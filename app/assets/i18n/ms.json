@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Penulisan audio gagal, sila semak ruang storan",
   "音频采集初始化失败": "Inisialisasi tangkapan audio gagal",
   "麦克风读取失败": "Bacaan mikrofon gagal",
-  "LecSync 控制台": "Konsol LecSync"
+  "LecSync 控制台": "Konsol LecSync",
+  "复制": "Salin",
+  "编辑": "Sunting",
+  "保存": "Simpan",
+  "编辑原文": "Sunting teks asal",
+  "编辑译文": "Sunting terjemahan"
 }

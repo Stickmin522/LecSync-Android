@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "heli kirjutamine ebaõnnestus, kontrollige salvestusruumi",
   "音频采集初始化失败": "helihõive lähtestamine ebaõnnestus",
   "麦克风读取失败": "mikrofoni lugemine ebaõnnestus",
-  "LecSync 控制台": "LecSynci konsool"
+  "LecSync 控制台": "LecSynci konsool",
+  "复制": "Kopeeri",
+  "编辑": "Muuda",
+  "保存": "Salvesta",
+  "编辑原文": "Muuda algteksti",
+  "编辑译文": "Muuda tõlget"
 }

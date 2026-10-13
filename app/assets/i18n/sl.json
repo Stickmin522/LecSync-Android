@@ -229,5 +229,10 @@
   "音频写入失败，请检查存储空间": "Zapis zvoka ni uspel, preverite prostor za shranjevanje",
   "音频采集初始化失败": "Inicializacija zajema zvoka ni uspela",
   "麦克风读取失败": "Branje mikrofona ni uspelo",
-  "LecSync 控制台": "Konzola LecSync"
+  "LecSync 控制台": "Konzola LecSync",
+  "复制": "Kopiraj",
+  "编辑": "Uredi",
+  "保存": "Shrani",
+  "编辑原文": "Uredi izvirno besedilo",
+  "编辑译文": "Uredi prevod"
 }

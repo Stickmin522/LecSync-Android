@@ -35,8 +35,10 @@ class SessionService : Service() {
     private var capturing=false
     private var overlayEngine:FlutterEngine?=null
     private var overlayBridge:Bridge?=null
+    private var overlayPlatform:OverlayPlatform?=null
     private var overlayView:FlutterView?=null
     private var params:WindowManager.LayoutParams?=null
+    private var overlayOriginalSoftInputMode:Int?=null
     private var overlayRoot:OverlayFrame?=null
     // addView registers the window before the first traversal attaches the view.
     private var overlayAdded=false
@@ -128,9 +130,24 @@ class SessionService : Service() {
     fun dismissOverlay(){overlayDismissed=true;hideOverlay()}
     fun setOverlayControlsVisible(visible:Boolean){overlayRoot?.controlsVisible=visible}
     fun overlayInteraction(active:Boolean){overlayBridge?.overlayInteraction(active)}
+    fun setOverlayTextInput(enabled:Boolean){
+        val root=overlayRoot?:return;val p=params?:return
+        if(root.textInputActive==enabled)return
+        root.textInputActive=enabled
+        if(enabled){
+            overlayOriginalSoftInputMode=p.softInputMode
+            p.flags=p.flags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+            p.softInputMode=WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        }else{
+            p.flags=p.flags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            p.softInputMode=overlayOriginalSoftInputMode?:WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
+            overlayOriginalSoftInputMode=null
+        }
+        applyOverlayLayout()
+    }
     private fun prepareOverlay(){
             if(overlayView==null){
-                val engine=FlutterEngine(this);overlayEngine=engine;overlayBridge=Bridge(this,engine)
+                val engine=FlutterEngine(this);overlayEngine=engine;overlayBridge=Bridge(this,engine);overlayPlatform=OverlayPlatform(this,engine)
                 val loader=FlutterInjector.instance().flutterLoader();loader.startInitialization(this);loader.ensureInitializationComplete(this,null)
                 val view=FlutterView(this,FlutterTextureView(this).apply{isOpaque=false});view.attachToFlutterEngine(engine)
                 val root=OverlayFrame(this,this);root.addView(view,android.widget.FrameLayout.LayoutParams(-1,-1));overlayRoot=root;overlayView=view
@@ -170,10 +187,11 @@ class SessionService : Service() {
         p.flags=p.flags or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
         overlayRoot?.setDocked(side)
     }
-    internal fun dockOverlayAtEdge(){
+    internal fun finishOverlayDrag(origin:IntArray,dx:Float,dy:Float){
         if(dockSide!=null || params==null)return
         val geometry=overlayGeometry()
-        val side=OverlayDock.sideFor(geometry,screenBounds().width(),(12*resources.displayMetrics.density).toInt())?:return
+        val side=OverlayDock.confirmedSideForDrag(origin,geometry,screenBounds().width(),dx,dy,
+            24*resources.displayMetrics.density)?:return
         dockSide=side;expandedGeometry=geometry.copyOf();applyDockedGeometry();applyOverlayLayout()
     }
     fun restoreOverlayFromDock(){
@@ -207,7 +225,7 @@ class SessionService : Service() {
         runCatching{getSystemService(WindowManager::class.java).removeViewImmediate(overlayRoot)}
         overlayEngine?.lifecycleChannel?.appIsPaused()
     }
-    private fun destroyOverlay(){hideOverlay();overlayView?.detachFromFlutterEngine();overlayView=null;overlayRoot=null;params=null;dockSide=null;expandedGeometry=null;overlayBridge?.close();overlayBridge=null;overlayEngine?.destroy();overlayEngine=null}
+    private fun destroyOverlay(){hideOverlay();overlayView?.detachFromFlutterEngine();overlayView=null;overlayRoot=null;params=null;overlayOriginalSoftInputMode=null;dockSide=null;expandedGeometry=null;overlayBridge?.close();overlayBridge=null;overlayPlatform?.close();overlayPlatform=null;overlayEngine?.destroy();overlayEngine=null}
     override fun onConfigurationChanged(newConfig:Configuration){super.onConfigurationChanged(newConfig);if(params!=null){normalizeOverlayGeometry();applyOverlayLayout()}}
     override fun onTaskRemoved(rootIntent:Intent?){refreshOverlay();super.onTaskRemoved(rootIntent)}
     override fun onDestroy(){handler.removeCallbacksAndMessages(null);stopAudio();if(wake?.isHeld==true)wake?.release();NativeCore.command("{\"op\":\"stop\"}");releaseProjection();destroyOverlay();audioWorker.shutdown();instance=null;super.onDestroy()}
