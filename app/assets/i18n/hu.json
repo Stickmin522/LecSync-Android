@@ -234,5 +234,10 @@
   "编辑": "Szerkesztés",
   "保存": "Mentés",
   "编辑原文": "Eredeti szöveg szerkesztése",
-  "编辑译文": "Fordítás szerkesztése"
+  "编辑译文": "Fordítás szerkesztése",
+  "译文语言": "Fordítás nyelve",
+  "自动重译，LecSync 按字符计费。": "Automatikus újrafordítás. A LecSync karakterenként számláz.",
+  "翻译仍在处理中，请稍后再次保存。": "A fordítás még folyamatban van. Hamarosan mentse újra.",
+  "原文超过 2,000 字符，无法自动重译。": "Az eredeti szöveg meghaladja a 2 000 karaktert, ezért nem fordítható újra automatikusan.",
+  "字幕已有新的修改，请重新打开后重试。": "Ez a bekezdés újabb módosításokat tartalmaz. Nyissa meg újra, és próbálja ismét."
 }

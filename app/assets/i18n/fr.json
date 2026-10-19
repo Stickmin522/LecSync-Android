@@ -234,5 +234,10 @@
   "编辑": "Modifier",
   "保存": "Enregistrer",
   "编辑原文": "Modifier le texte original",
-  "编辑译文": "Modifier la traduction"
+  "编辑译文": "Modifier la traduction",
+  "译文语言": "Langue de traduction",
+  "自动重译，LecSync 按字符计费。": "Retraduction automatique. LecSync facture au caractère.",
+  "翻译仍在处理中，请稍后再次保存。": "La traduction est en cours. Enregistrez à nouveau dans un instant.",
+  "原文超过 2,000 字符，无法自动重译。": "Le texte original dépasse 2 000 caractères et ne peut pas être retraduit automatiquement.",
+  "字幕已有新的修改，请重新打开后重试。": "Ce paragraphe a été modifié. Rouvrez-le pour réessayer."
 }

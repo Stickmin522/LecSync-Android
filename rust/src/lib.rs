@@ -1,6 +1,7 @@
 mod caption_edits;
 mod captions;
 mod languages;
+mod text_translation;
 mod transport;
 use jni::{
     JNIEnv,
@@ -661,6 +662,7 @@ fn command(input: &str) -> Result<Value, String> {
     match op {
         "snapshot" => Ok(json!(snapshot())),
         "editCaption" => caption_edits::command(&req),
+        "retranslateCaption" => caption_edits::retranslate(&req),
         "warn" | "fail" => {
             let e = ENGINE.lock().map_err(|_| "状态异常")?;
             let message = req["message"].as_str().unwrap_or("录音发生错误");

@@ -15,6 +15,8 @@ struct Fields {
     text: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     translation: Option<String>,
+    revision: u64,
+    translation_job: Option<text_translation::Job>,
 }
 
 impl Fields {
@@ -68,9 +70,15 @@ impl<'a> Edit<'a> {
         };
         let fields = edits.entry(self.row_id.to_owned()).or_default();
         if self.field == "text" {
-            fields.text = Some(self.value.to_owned());
+            if fields.text.as_deref() != Some(self.value) {
+                fields.text = Some(self.value.to_owned());
+                fields.revision = fields.revision.saturating_add(1);
+                fields.translation_job = None;
+            }
         } else {
             fields.translation = Some(self.value.to_owned());
+            fields.revision = fields.revision.saturating_add(1);
+            fields.translation_job = None;
         }
         Ok(())
     }
@@ -177,51 +185,250 @@ pub(super) fn render(raw: &View) -> View {
     rendered
 }
 
-fn apply_shared(view: &Arc<Mutex<View>>, edit: &Edit<'_>, directory: &str) -> Result<View, String> {
+fn update_shared(
+    view: &Arc<Mutex<View>>,
+    directory: &str,
+    change: &mut impl FnMut(&mut View) -> Result<(), String>,
+) -> Result<View, String> {
     let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
     let mut raw = view.lock().map_err(|_| "字幕状态读取失败")?;
     let mut updated = raw.clone();
-    edit.apply(&mut updated)?;
+    change(&mut updated)?;
     write_record(&updated, directory)?;
-    // Publish only once persistence succeeds; a failed save leaves both views unchanged.
-    *raw = updated;
+    *raw = updated.clone();
     if raw.phase == "ended" {
         if let Ok(mut last) = LAST.lock() {
-            *last = raw.clone();
+            *last = updated.clone();
         }
     }
-    Ok(render(&raw))
+    Ok(updated)
 }
 
-pub(super) fn command(req: &Value) -> Result<Value, String> {
+#[cfg(test)]
+fn apply_shared(view: &Arc<Mutex<View>>, edit: &Edit<'_>, directory: &str) -> Result<View, String> {
+    update_shared(view, directory, &mut |v| edit.apply(v)).map(|v| render(&v))
+}
+
+// Network requests never hold the recording, checkpoint, or file locks.
+fn update(
+    req: &Value,
+    mut change: impl FnMut(&mut View) -> Result<(), String>,
+) -> Result<View, String> {
     let id = req["id"].as_str().ok_or("缺少记录 ID")?;
     if !valid_id(id) {
         return Err("无效记录 ID".into());
     }
     let directory = req["directory"].as_str().ok_or("缺少目录")?;
-    let edit = Edit::parse(req)?;
     let engine = ENGINE.lock().map_err(|_| "状态异常")?;
     if let Some(engine) = engine.as_ref() {
         if engine.view.lock().map_err(|_| "字幕状态读取失败")?.id == id {
-            return Ok(json!(apply_shared(&engine.view, &edit, directory)?));
+            return update_shared(&engine.view, directory, &mut change);
         }
     }
     drop(engine);
-
     let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
     let mut last = LAST.lock().map_err(|_| "字幕状态读取失败")?;
     if last.id == id {
         let mut updated = last.clone();
-        edit.apply(&mut updated)?;
+        change(&mut updated)?;
         write_record(&updated, directory)?;
-        *last = updated;
-        return Ok(json!(render(&last)));
+        *last = updated.clone();
+        return Ok(updated);
     }
     drop(last);
     let mut updated = load(directory, id)?;
-    edit.apply(&mut updated)?;
+    change(&mut updated)?;
     write_record(&updated, directory)?;
-    Ok(json!(render(&updated)))
+    Ok(updated)
+}
+
+pub(super) fn command(req: &Value) -> Result<Value, String> {
+    let edit = Edit::parse(req)?;
+    update(req, |v| edit.apply(v)).map(|v| json!(render(&v)))
+}
+
+fn fields<'a>(v: &'a mut View, row_type: &str, row_id: &str) -> Result<&'a mut Fields, String> {
+    let map = match row_type {
+        "caption" if v.captions.iter().any(|r| r.segment.id == row_id) => {
+            &mut v.caption_edits.caption
+        }
+        "segment" if v.segments.iter().any(|s| s.id == row_id) => &mut v.caption_edits.segment,
+        _ => return Err("所选字幕已不存在，请重新打开记录".into()),
+    };
+    Ok(map.entry(row_id.to_owned()).or_default())
+}
+
+fn language_hint(language: &str) -> String {
+    let lower = language.to_ascii_lowercase();
+    match lower.split(['-', '_']).next().unwrap_or("") {
+        "nb" | "nn" => "no".into(),
+        "fil" => "tl".into(),
+        "iw" => "he".into(),
+        code => code.into(),
+    }
+}
+
+fn prepare(v: &mut View, req: &Value) -> Result<Option<text_translation::Job>, String> {
+    let row_type = req["rowType"].as_str().unwrap_or("");
+    let row_id = req["rowId"].as_str().unwrap_or("");
+    let rendered = render(v);
+    let row = match row_type {
+        "caption" => rendered
+            .captions
+            .iter()
+            .map(|r| &r.segment)
+            .find(|r| r.id == row_id),
+        "segment" => rendered.segments.iter().find(|r| r.id == row_id),
+        _ => None,
+    }
+    .ok_or("所选字幕已不存在，请重新打开记录")?;
+    let pair = languages::parse_pair(if v.pair.is_empty() { "ja-zh" } else { &v.pair })?;
+    let hint = language_hint(&row.language);
+    let target = req["targetLanguage"]
+        .as_str()
+        .filter(|s| pair.contains(s))
+        .ok_or("不支持的语言")?;
+    let source = if pair.contains(&hint.as_str()) && hint != target {
+        hint.as_str()
+    } else {
+        "auto"
+    };
+    let fields = fields(v, row_type, row_id)?;
+    if row.text.trim().is_empty() {
+        fields.translation = Some(String::new());
+        fields.translation_job = None;
+        fields.revision = fields.revision.saturating_add(1);
+        return Ok(None);
+    }
+    if row.text.chars().count() > 2000 {
+        return Err("原文超过 2,000 字符，无法自动重译。".into());
+    }
+    if let Some(job) = &fields.translation_job {
+        if job.text == row.text
+            && job.source_language == source
+            && job.target_language == target
+            && job.revision == fields.revision
+            && !job.terminal_failure
+        {
+            return Ok(if job.succeeded {
+                None
+            } else {
+                Some(job.clone())
+            });
+        }
+    }
+    let job = text_translation::Job {
+        text: row.text.clone(),
+        source_language: source.into(),
+        target_language: target.into(),
+        key: text_translation::new_key(),
+        revision: fields.revision,
+        ..text_translation::Job::default()
+    };
+    fields.translation_job = Some(job.clone());
+    Ok(Some(job))
+}
+
+fn current_job<'a>(
+    v: &'a mut View,
+    req: &Value,
+    expected: &text_translation::Job,
+) -> Result<&'a mut Fields, String> {
+    let rendered = render(v);
+    let row_id = req["rowId"].as_str().unwrap_or("");
+    let row = if req["rowType"] == "caption" {
+        rendered
+            .captions
+            .iter()
+            .map(|r| &r.segment)
+            .find(|s| s.id == row_id)
+    } else {
+        rendered.segments.iter().find(|s| s.id == row_id)
+    };
+    if row.is_none_or(|s| s.text != expected.text) {
+        return Err("字幕已有新的修改，请重新打开后重试。".into());
+    }
+    let fields = fields(
+        v,
+        req["rowType"].as_str().unwrap_or(""),
+        req["rowId"].as_str().unwrap_or(""),
+    )?;
+    if fields.revision != expected.revision
+        || fields
+            .translation_job
+            .as_ref()
+            .is_none_or(|j| j.key != expected.key)
+    {
+        return Err("字幕已有新的修改，请重新打开后重试。".into());
+    }
+    Ok(fields)
+}
+
+pub(super) fn retranslate(req: &Value) -> Result<Value, String> {
+    retranslate_using(req, |key, job, remember| {
+        text_translation::translate(key, job, remember)
+    })
+}
+
+fn retranslate_using(
+    req: &Value,
+    translate: impl FnOnce(
+        &str,
+        &text_translation::Job,
+        &mut dyn FnMut(&str) -> Result<(), String>,
+    ) -> Result<String, text_translation::Failure>,
+) -> Result<Value, String> {
+    let mut job = None;
+    let prepared = update(req, |v| {
+        job = prepare(v, req)?;
+        Ok(())
+    })?;
+    let Some(job) = job else {
+        return Ok(json!(render(&prepared)));
+    };
+    let outcome = translate(
+        req["apiKey"].as_str().unwrap_or(""),
+        &job,
+        &mut |id: &str| {
+            update(req, |v| {
+                current_job(v, req, &job)?
+                    .translation_job
+                    .as_mut()
+                    .unwrap()
+                    .request_id = Some(id.into());
+                Ok(())
+            })
+            .map(|_| ())
+        },
+    );
+    let mut error = None;
+    let updated = update(req, |v| {
+        // If another editor has saved new text or a manual translation, an old
+        // response must never overwrite it, even when requests finish out of order.
+        let fields = match current_job(v, req, &job) {
+            Ok(fields) => fields,
+            Err(message) => {
+                error = Some(message);
+                return Ok(());
+            }
+        };
+        match &outcome {
+            Ok(text) => {
+                fields.translation = Some(text.clone());
+                fields.translation_job.as_mut().unwrap().succeeded = true;
+            }
+            Err(failure) => {
+                fields.translation_job.as_mut().unwrap().terminal_failure = failure.terminal;
+                error = Some(failure.message.clone());
+            }
+        }
+        Ok(())
+    })?;
+    let mut output = json!(render(&updated));
+    if let Some(error) = error {
+        output["retranslationError"] = json!(error);
+    }
+    Ok(output)
 }
 
 #[cfg(test)]
@@ -286,6 +493,198 @@ mod tests {
     ) -> Value {
         json!({"op":"editCaption", "id":id, "directory":directory.path(),
             "rowType":row_type, "rowId":row_id, "field":field, "value":value})
+    }
+
+    fn translation_request(directory: &Directory, id: &str) -> Value {
+        let mut v = fixture(id);
+        v.pair = "en-zh".into();
+        v.captions[0].segment.language = "en-US".into();
+        fs::write(
+            directory.0.join(format!("{id}.json")),
+            serde_json::to_vec(&v).unwrap(),
+        )
+        .unwrap();
+        command(&request(
+            id,
+            directory,
+            "caption",
+            "caption-1",
+            "text",
+            "Corrected source",
+        ))
+        .unwrap();
+        json!({"id":id,"directory":directory.path(),"rowType":"caption","rowId":"caption-1","targetLanguage":"zh","apiKey":"test-key"})
+    }
+
+    #[test]
+    fn retranslation_is_persisted_exported_and_cached_for_unchanged_saves() {
+        let directory = Directory::new();
+        let req = translation_request(&directory, "9301");
+        let output = retranslate_using(&req, |key, job, remember| {
+            assert_eq!(key, "test-key");
+            assert_eq!(job.text, "Corrected source");
+            assert_eq!(job.source_language, "en");
+            assert_eq!(job.target_language, "zh");
+            remember("req_saved").unwrap();
+            let stored = load(directory.path(), "9301").unwrap();
+            assert_eq!(
+                stored.caption_edits.caption["caption-1"]
+                    .translation_job
+                    .as_ref()
+                    .unwrap()
+                    .request_id
+                    .as_deref(),
+                Some("req_saved")
+            );
+            Ok("修正后的译文".into())
+        })
+        .unwrap();
+        assert_eq!(output["captions"][0]["text"], "Corrected source");
+        assert_eq!(output["captions"][0]["translation"], "修正后的译文");
+        let restored = render(&load(directory.path(), "9301").unwrap());
+        assert!(transcript(&restored).contains("修正后的译文"));
+        assert!(srt(&restored.segments).unwrap().contains("修正后的译文"));
+        assert!(
+            !serde_json::to_string(&restored)
+                .unwrap()
+                .contains("test-key")
+        );
+        command(&request(
+            "9301",
+            &directory,
+            "caption",
+            "caption-1",
+            "text",
+            "Corrected source",
+        ))
+        .unwrap();
+        retranslate_using(&req, |_, _, _| {
+            panic!("unchanged successful edit must not charge again")
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn interrupted_translation_reuses_persisted_request_and_retains_previous_translation() {
+        let directory = Directory::new();
+        let req = translation_request(&directory, "9302");
+        let mut original_key = String::new();
+        let first = retranslate_using(&req, |_, job, remember| {
+            original_key = job.key.clone();
+            remember("req_pending").unwrap();
+            Err(text_translation::Failure {
+                message: "连接 LecSync 失败，请检查网络".into(),
+                terminal: false,
+            })
+        })
+        .unwrap();
+        assert_eq!(first["captions"][0]["text"], "Corrected source");
+        assert_eq!(first["captions"][0]["translation"], "Original translation");
+        assert!(first["retranslationError"].is_string());
+        command(&request(
+            "9302",
+            &directory,
+            "caption",
+            "caption-1",
+            "text",
+            "Corrected source",
+        ))
+        .unwrap();
+        let retried = retranslate_using(&req, |_, job, _| {
+            assert_eq!(job.key, original_key);
+            assert_eq!(job.request_id.as_deref(), Some("req_pending"));
+            Ok("完成".into())
+        })
+        .unwrap();
+        assert_eq!(retried["captions"][0]["translation"], "完成");
+    }
+
+    #[test]
+    fn delayed_translation_never_overwrites_new_source_or_manual_translation() {
+        for field in ["text", "translation"] {
+            let directory = Directory::new();
+            let req = translation_request(&directory, "9303");
+            let output = retranslate_using(&req, |_, _, remember| {
+                remember("req_delayed").unwrap();
+                command(&request(
+                    "9303",
+                    &directory,
+                    "caption",
+                    "caption-1",
+                    field,
+                    "Newer manual edit",
+                ))
+                .unwrap();
+                Ok("Outdated result".into())
+            })
+            .unwrap();
+            assert_eq!(output["captions"][0][field], "Newer manual edit");
+            assert!(output["retranslationError"].is_string());
+            assert!(
+                !transcript(&render(&load(directory.path(), "9303").unwrap()))
+                    .contains("Outdated result")
+            );
+        }
+    }
+
+    #[test]
+    fn target_change_invalidates_pending_result_and_terminal_failure_allows_fresh_request() {
+        let directory = Directory::new();
+        let req = translation_request(&directory, "9304");
+        let mut old_key = String::new();
+        retranslate_using(&req, |_, job, _| {
+            old_key = job.key.clone();
+            Err(text_translation::Failure {
+                message: "API 钱包余额不足".into(),
+                terminal: true,
+            })
+        })
+        .unwrap();
+        retranslate_using(&req, |_, job, _| {
+            assert_ne!(job.key, old_key);
+            let mut other_target = req.clone();
+            other_target["targetLanguage"] = json!("en");
+            update(&req, |v| {
+                prepare(v, &other_target)?;
+                Ok(())
+            })
+            .unwrap();
+            Ok("Old target result".into())
+        })
+        .unwrap();
+        let restored = render(&load(directory.path(), "9304").unwrap());
+        assert_eq!(
+            restored.captions[0].segment.translation,
+            "Original translation"
+        );
+    }
+
+    #[test]
+    fn blank_edits_clear_translation_and_unicode_limit_keeps_edits_without_request() {
+        let directory = Directory::new();
+        let req = translation_request(&directory, "9305");
+        for value in [" \n ".to_owned(), "字".repeat(2001)] {
+            command(&request(
+                "9305",
+                &directory,
+                "caption",
+                "caption-1",
+                "text",
+                &value,
+            ))
+            .unwrap();
+            let result = retranslate_using(&req, |_, _, _| {
+                panic!("blank or oversized text must not be billed")
+            });
+            let restored = render(&load(directory.path(), "9305").unwrap());
+            assert_eq!(restored.captions[0].segment.text, value);
+            if value.trim().is_empty() {
+                result.unwrap();
+                assert_eq!(restored.captions[0].segment.translation, "");
+            } else {
+                assert!(result.unwrap_err().contains("2,000"));
+            }
+        }
     }
 
     #[test]

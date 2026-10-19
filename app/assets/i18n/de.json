@@ -234,5 +234,10 @@
   "编辑": "Bearbeiten",
   "保存": "Speichern",
   "编辑原文": "Originaltext bearbeiten",
-  "编辑译文": "Übersetzung bearbeiten"
+  "编辑译文": "Übersetzung bearbeiten",
+  "译文语言": "Übersetzungssprache",
+  "自动重译，LecSync 按字符计费。": "Automatische Neuübersetzung. LecSync rechnet pro Zeichen ab.",
+  "翻译仍在处理中，请稍后再次保存。": "Die Übersetzung läuft noch. Bitte gleich erneut speichern.",
+  "原文超过 2,000 字符，无法自动重译。": "Der Originaltext überschreitet 2.000 Zeichen und kann nicht automatisch neu übersetzt werden.",
+  "字幕已有新的修改，请重新打开后重试。": "Dieser Absatz wurde inzwischen geändert. Zum Wiederholen erneut öffnen."
 }

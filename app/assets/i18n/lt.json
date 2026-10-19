@@ -234,5 +234,10 @@
   "编辑": "Redaguoti",
   "保存": "Išsaugoti",
   "编辑原文": "Redaguoti originalų tekstą",
-  "编辑译文": "Redaguoti vertimą"
+  "编辑译文": "Redaguoti vertimą",
+  "译文语言": "Vertimo kalba",
+  "自动重译，LecSync 按字符计费。": "Automatinis pakartotinis vertimas. LecSync taiko mokestį už simbolį.",
+  "翻译仍在处理中，请稍后再次保存。": "Vertimas dar vykdomas. Netrukus išsaugokite dar kartą.",
+  "原文超过 2,000 字符，无法自动重译。": "Originalas viršija 2 000 simbolių ir negali būti automatiškai išverstas iš naujo.",
+  "字幕已有新的修改，请重新打开后重试。": "Šioje pastraipoje yra naujesnių pakeitimų. Atverkite ją iš naujo ir bandykite dar kartą."
 }

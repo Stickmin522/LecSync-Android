@@ -234,5 +234,10 @@
   "编辑": "Chỉnh sửa",
   "保存": "Lưu",
   "编辑原文": "Chỉnh sửa văn bản gốc",
-  "编辑译文": "Chỉnh sửa bản dịch"
+  "编辑译文": "Chỉnh sửa bản dịch",
+  "译文语言": "Ngôn ngữ bản dịch",
+  "自动重译，LecSync 按字符计费。": "Tự động dịch lại. LecSync tính phí theo ký tự.",
+  "翻译仍在处理中，请稍后再次保存。": "Bản dịch vẫn đang được xử lý. Hãy lưu lại sau ít phút.",
+  "原文超过 2,000 字符，无法自动重译。": "Văn bản gốc vượt quá 2.000 ký tự và không thể tự động dịch lại.",
+  "字幕已有新的修改，请重新打开后重试。": "Đoạn này có chỉnh sửa mới hơn. Hãy mở lại để thử lại."
 }

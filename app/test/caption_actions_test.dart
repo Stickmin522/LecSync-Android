@@ -36,6 +36,8 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   final nativeCalls = <MethodCall>[];
   final edits = <Map<String, dynamic>>[];
+  final translations = <Map<String, dynamic>>[];
+  bool failTranslation = false;
   String? clipboardText;
   bool failSave = false;
   Map<String, dynamic> stored = captionRecord();
@@ -44,6 +46,8 @@ void main() {
     await AppStrings.load('zh');
     nativeCalls.clear();
     edits.clear();
+    translations.clear();
+    failTranslation = false;
     clipboardText = null;
     failSave = false;
     stored = captionRecord();
@@ -62,6 +66,18 @@ void main() {
             (row) => row['id'] == request['rowId'],
           );
           row[request['field']] = request['value'];
+          return jsonEncode(stored);
+        }
+        if (request['op'] == 'retranslateCaption') {
+          translations.add(request);
+          if (failTranslation) {
+            return jsonEncode({...stored, 'retranslationError': 'API 钱包余额不足'});
+          }
+          final key = request['rowType'] == 'caption' ? 'captions' : 'segments';
+          final row = (stored[key] as List).cast<Map>().singleWhere(
+            (row) => row['id'] == request['rowId'],
+          );
+          row['translation'] = '重译: ${row['text']}';
           return jsonEncode(stored);
         }
         return jsonEncode(stored);
@@ -163,7 +179,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
     for (final rowType in ['caption', 'segment']) {
-      testWidgets('editing $rowType $field changes only the selected field', (
+      testWidgets('editing $rowType $field saves only the chosen paragraph', (
         tester,
       ) async {
         await showFeed(tester, rowType: rowType);
@@ -184,7 +200,20 @@ void main() {
         ]);
         expect(find.text(replacement), findsOneWidget);
         expect(find.text(original), findsNothing);
-        expect(find.text(field == 'text' ? '译文一' : '原文一'), findsOneWidget);
+        expect(
+          find.text(field == 'text' ? '重译: $replacement' : '原文一'),
+          findsOneWidget,
+        );
+        expect(translations, field == 'text' ? hasLength(1) : isEmpty);
+        if (field == 'text') {
+          expect(translations.single, {
+            'op': 'retranslateCaption',
+            'id': '1001',
+            'rowId': 'first',
+            'rowType': rowType,
+            'targetLanguage': 'zh',
+          });
+        }
         expect(find.text('原文二'), findsOneWidget);
         expect(find.text('译文二'), findsOneWidget);
         expect(find.byType(TextField), findsNothing);
@@ -212,13 +241,95 @@ void main() {
         expect(find.byType(Dialog), findsNothing);
         expect(find.text('保存的新原文'), findsOneWidget);
         expect(find.text('原文一'), findsNothing);
-        expect(find.text('译文一'), findsOneWidget);
+        expect(find.text('重译: 保存的新原文'), findsOneWidget);
         expect(find.text('原文二'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       },
     );
   }
+
+  testWidgets(
+    'failed retranslation retains saved source, old translation, and retry draft',
+    (tester) async {
+      await showFeed(tester, floating: true);
+      await openEditor(tester, '原文一');
+      await tester.enterText(find.byType(TextField), '新的原文');
+      failTranslation = true;
+      await tester.tap(button('保存'));
+      await tester.pumpAndSettle();
+      expect(find.text('${tr('已保存')} · ${tr('API 钱包余额不足')}'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+      expect(stored['captions'][0]['text'], '新的原文');
+      expect(find.text('译文一'), findsOneWidget);
+      expect(nativeInputStates(), [true]);
+      failTranslation = false;
+      await tester.tap(button('保存'));
+      await tester.pumpAndSettle();
+      expect(translations, hasLength(2));
+      expect(translations[0], translations[1]);
+      expect(find.text('新的原文'), findsOneWidget);
+      expect(find.text('重译: 新的原文'), findsOneWidget);
+      expect(find.text('译文二'), findsOneWidget);
+      expect(nativeInputStates(), [true, false]);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('saving an unchanged original does not invoke paid translation', (
+    tester,
+  ) async {
+    await showFeed(tester);
+    await openEditor(tester, '原文一');
+    await tester.tap(button('保存'));
+    await tester.pumpAndSettle();
+    expect(translations, isEmpty);
+    expect(find.text('原文一'), findsOneWidget);
+    expect(find.text('译文一'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('source save failure never calls paid translation', (
+    tester,
+  ) async {
+    await showFeed(tester);
+    await openEditor(tester, '原文一');
+    await tester.enterText(find.byType(TextField), '未保存的原文');
+    failSave = true;
+    await tester.tap(button('保存'));
+    await tester.pumpAndSettle();
+    expect(translations, isEmpty);
+    expect(find.textContaining('字幕保存失败'), findsOneWidget);
+    expect(stored['captions'][0]['text'], '原文一');
+    await tester.tap(button('取消'));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+    'translation language defaults opposite detected source and can be changed',
+    (tester) async {
+      final record = captionRecord()..['pair'] = 'en-zh';
+      record['captions'][0]['language'] = 'zh-CN';
+      await showFeed(tester, record: record);
+      await openEditor(tester, '原文一');
+      final dropdown = find.byKey(const ValueKey('retranslation-language'));
+      expect(
+        tester.widget<DropdownButtonFormField<String>>(dropdown).initialValue,
+        'en',
+      );
+      expect(find.text(tr('自动重译，LecSync 按字符计费。')), findsOneWidget);
+      await tester.tap(dropdown);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(AppStrings.name('zh')).last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Revised English');
+      await tester.tap(button('保存'));
+      await tester.pumpAndSettle();
+      expect(translations.single['targetLanguage'], 'zh');
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
 
   testWidgets('preview without a row identifier can be copied', (tester) async {
     await showFeed(

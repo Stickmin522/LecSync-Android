@@ -51,9 +51,10 @@ class Bridge(private val context: Context, engine: FlutterEngine, private val ac
                     "core" -> {
                         input.put("directory", SettingsStore.directory(context))
                         if(input.optString("op")=="test") input.put("config",SettingsStore.config(context))
+                        if(input.optString("op")=="retranslateCaption") input.put("apiKey",runCatching { SettingsStore.readKey(context) }.getOrDefault(""))
                         executor.execute {
                             val output=runCatching { NativeCore.command(input.toString()) }
-                            handler.post { output.fold({ result.success(it); if(input.optString("op")=="editCaption" && JSONObject(it).has("id")) broadcast() },{ result.error("core","底层操作失败",null) }) }
+                            handler.post { output.fold({ result.success(it); if(input.optString("op") in setOf("editCaption", "retranslateCaption") && JSONObject(it).has("id")) broadcast() },{ result.error("core","底层操作失败",null) }) }
                         }
                     }
                     else -> result.notImplemented()

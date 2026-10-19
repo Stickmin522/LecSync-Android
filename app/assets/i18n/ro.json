@@ -234,5 +234,10 @@
   "编辑": "Editează",
   "保存": "Salvează",
   "编辑原文": "Editează textul original",
-  "编辑译文": "Editează traducerea"
+  "编辑译文": "Editează traducerea",
+  "译文语言": "Limba traducerii",
+  "自动重译，LecSync 按字符计费。": "Retraducere automată. LecSync taxează pe caracter.",
+  "翻译仍在处理中，请稍后再次保存。": "Traducerea este încă în curs. Salvați din nou în scurt timp.",
+  "原文超过 2,000 字符，无法自动重译。": "Originalul depășește 2.000 de caractere și nu poate fi retradus automat.",
+  "字幕已有新的修改，请重新打开后重试。": "Acest paragraf are modificări mai noi. Redeschideți-l pentru a reîncerca."
 }

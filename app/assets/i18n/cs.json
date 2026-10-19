@@ -234,5 +234,10 @@
   "编辑": "Upravit",
   "保存": "Uložit",
   "编辑原文": "Upravit původní text",
-  "编辑译文": "Upravit překlad"
+  "编辑译文": "Upravit překlad",
+  "译文语言": "Jazyk překladu",
+  "自动重译，LecSync 按字符计费。": "Automatický nový překlad. LecSync účtuje podle počtu znaků.",
+  "翻译仍在处理中，请稍后再次保存。": "Překlad se stále zpracovává. Za chvíli znovu uložte.",
+  "原文超过 2,000 字符，无法自动重译。": "Originál překračuje 2 000 znaků a nelze jej automaticky znovu přeložit.",
+  "字幕已有新的修改，请重新打开后重试。": "Tento odstavec má novější úpravy. Znovu jej otevřete a opakujte pokus."
 }

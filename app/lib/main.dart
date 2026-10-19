@@ -1216,7 +1216,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'LingoDesk 1.2.2 · Android 10–17 · ARM64',
+              'LingoDesk 1.2.3 · Android 10–17 · ARM64',
               style: TextStyle(fontSize: 12, height: 1.8),
             ),
           ],
@@ -1253,7 +1253,18 @@ class _CaptionFeedState extends State<CaptionFeed> {
   ) async {
     if (actionsOpen) return;
     actionsOpen = true;
-    final recordId = (editedRecord ?? widget.record)['id'] as String? ?? '';
+    final record = editedRecord ?? widget.record;
+    final recordId = record['id'] as String? ?? '';
+    final pair = AppStrings.pair(record['pair']);
+    final hint = captionLanguageHint(row['language'] as String? ?? '');
+    final previousJob =
+        ((record['captionEdits'] as Map?)?[rowType]
+                as Map?)?[row['id']]?['translationJob']
+            as Map?;
+    final previousTarget = previousJob?['targetLanguage'];
+    final target = pair.contains(previousTarget)
+        ? previousTarget as String
+        : (hint == pair[1] ? pair[0] : pair[1]);
     final rowId = row['id'] as String? ?? '';
     final canEdit = recordId.isNotEmpty && rowId.isNotEmpty;
     try {
@@ -1300,7 +1311,9 @@ class _CaptionFeedState extends State<CaptionFeed> {
             title: tr(field == 'text' ? '编辑原文' : '编辑译文'),
             text: text,
             floating: widget.floating,
-            save: (value) async {
+            languages: field == 'text' ? pair : const [],
+            targetLanguage: target,
+            save: (value, targetLanguage) async {
               final updated = await PlatformDesk.call('core', {
                 'op': 'editCaption',
                 'id': recordId,
@@ -1309,11 +1322,36 @@ class _CaptionFeedState extends State<CaptionFeed> {
                 'field': field,
                 'value': value,
               });
-              if (mounted) {
-                setState(
-                  () =>
-                      editedRecord = Map<String, dynamic>.from(updated as Map),
-                );
+              void adopt(dynamic view) {
+                if (mounted) {
+                  setState(
+                    () => editedRecord = Map<String, dynamic>.from(view as Map),
+                  );
+                }
+              }
+
+              adopt(updated);
+              if (field == 'text' &&
+                  (value != text ||
+                      targetLanguage != target ||
+                      (previousJob != null &&
+                          previousJob['succeeded'] != true))) {
+                try {
+                  final translated = await PlatformDesk.call('core', {
+                    'op': 'retranslateCaption',
+                    'id': recordId,
+                    'rowId': rowId,
+                    'rowType': rowType,
+                    'targetLanguage': targetLanguage,
+                  });
+                  adopt(translated);
+                  final error = (translated as Map)['retranslationError'];
+                  if (error is String && error.isNotEmpty) {
+                    throw Exception(tr(error));
+                  }
+                } catch (error) {
+                  throw Exception('${tr('已保存')} · ${_captionError(error)}');
+                }
               }
             },
           ),
@@ -1557,22 +1595,36 @@ String _captionError(Object error) => tr(
       : error.toString().replaceFirst('Exception: ', ''),
 );
 
+String captionLanguageHint(String language) {
+  final code = language.toLowerCase().split(RegExp('[-_]')).first;
+  return switch (code) {
+    'nb' || 'nn' => 'no',
+    'fil' => 'tl',
+    'iw' => 'he',
+    _ => code,
+  };
+}
+
 class _CaptionEditor extends StatefulWidget {
   const _CaptionEditor({
     required this.title,
     required this.text,
     required this.floating,
     required this.save,
+    required this.languages,
+    required this.targetLanguage,
   });
-  final String title, text;
+  final String title, text, targetLanguage;
+  final List<String> languages;
   final bool floating;
-  final Future<void> Function(String) save;
+  final Future<void> Function(String, String) save;
   @override
   State<_CaptionEditor> createState() => _CaptionEditorState();
 }
 
 class _CaptionEditorState extends State<_CaptionEditor> {
   late final controller = TextEditingController(text: widget.text);
+  late String targetLanguage = widget.targetLanguage;
   bool saving = false;
   String? error;
 
@@ -1583,7 +1635,7 @@ class _CaptionEditorState extends State<_CaptionEditor> {
       error = null;
     });
     try {
-      await widget.save(controller.text);
+      await widget.save(controller.text, targetLanguage);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) setState(() => error = _captionError(e));
@@ -1622,6 +1674,37 @@ class _CaptionEditorState extends State<_CaptionEditor> {
                       maxLines: widget.floating ? 3 : 8,
                       decoration: InputDecoration(labelText: widget.title),
                     ),
+                    if (widget.languages.isNotEmpty) ...[
+                      DropdownButtonFormField<String>(
+                        key: const ValueKey('retranslation-language'),
+                        initialValue: targetLanguage,
+                        isExpanded: true,
+                        decoration: InputDecoration(labelText: tr('译文语言')),
+                        items: widget.languages
+                            .map(
+                              (code) => DropdownMenuItem(
+                                value: code,
+                                child: Text(
+                                  AppStrings.name(code),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: saving
+                            ? null
+                            : (value) {
+                                if (value != null) {
+                                  setState(() => targetLanguage = value);
+                                }
+                              },
+                      ),
+                      Text(
+                        tr('自动重译，LecSync 按字符计费。'),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                     if (error != null)
                       Text(
                         error!,

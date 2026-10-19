@@ -234,5 +234,10 @@
   "编辑": "Edytuj",
   "保存": "Zapisz",
   "编辑原文": "Edytuj tekst oryginalny",
-  "编辑译文": "Edytuj tłumaczenie"
+  "编辑译文": "Edytuj tłumaczenie",
+  "译文语言": "Język tłumaczenia",
+  "自动重译，LecSync 按字符计费。": "Automatyczne ponowne tłumaczenie. LecSync nalicza opłaty za znaki.",
+  "翻译仍在处理中，请稍后再次保存。": "Tłumaczenie jest w toku. Zapisz ponownie za chwilę.",
+  "原文超过 2,000 字符，无法自动重译。": "Oryginał przekracza 2 000 znaków i nie można go automatycznie przetłumaczyć ponownie.",
+  "字幕已有新的修改，请重新打开后重试。": "Ten akapit ma nowsze zmiany. Otwórz go ponownie i spróbuj jeszcze raz."
 }

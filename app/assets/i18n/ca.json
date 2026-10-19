@@ -234,5 +234,10 @@
   "编辑": "Edita",
   "保存": "Desa",
   "编辑原文": "Edita el text original",
-  "编辑译文": "Edita la traducció"
+  "编辑译文": "Edita la traducció",
+  "译文语言": "Llengua de traducció",
+  "自动重译，LecSync 按字符计费。": "Retraducció automàtica. LecSync cobra per caràcter.",
+  "翻译仍在处理中，请稍后再次保存。": "La traducció continua en procés. Desa de nou d'aquí a poc.",
+  "原文超过 2,000 字符，无法自动重译。": "L'original supera els 2.000 caràcters i no es pot retraduir automàticament.",
+  "字幕已有新的修改，请重新打开后重试。": "Aquest paràgraf té canvis nous. Torna'l a obrir per reintentar-ho."
 }

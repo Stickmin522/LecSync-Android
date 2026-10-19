@@ -234,5 +234,10 @@
   "编辑": "Muuda",
   "保存": "Salvesta",
   "编辑原文": "Muuda algteksti",
-  "编辑译文": "Muuda tõlget"
+  "编辑译文": "Muuda tõlget",
+  "译文语言": "Tõlke keel",
+  "自动重译，LecSync 按字符计费。": "Automaatne uuesti tõlkimine. LecSync arveldab tähemärkide alusel.",
+  "翻译仍在处理中，请稍后再次保存。": "Tõlkimine on veel pooleli. Salvestage varsti uuesti.",
+  "原文超过 2,000 字符，无法自动重译。": "Algtekst ületab 2 000 tähemärki ja seda ei saa automaatselt uuesti tõlkida.",
+  "字幕已有新的修改，请重新打开后重试。": "Selles lõigus on uuemaid muudatusi. Proovimiseks avage see uuesti."
 }

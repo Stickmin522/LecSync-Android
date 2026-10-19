@@ -234,5 +234,10 @@
   "编辑": "Edit",
   "保存": "Simpan",
   "编辑原文": "Edit teks asli",
-  "编辑译文": "Edit terjemahan"
+  "编辑译文": "Edit terjemahan",
+  "译文语言": "Bahasa terjemahan",
+  "自动重译，LecSync 按字符计费。": "Terjemahan ulang otomatis. LecSync mengenakan biaya per karakter.",
+  "翻译仍在处理中，请稍后再次保存。": "Terjemahan masih diproses. Simpan lagi sebentar lagi.",
+  "原文超过 2,000 字符，无法自动重译。": "Teks asli melebihi 2.000 karakter dan tidak dapat diterjemahkan ulang secara otomatis.",
+  "字幕已有新的修改，请重新打开后重试。": "Paragraf ini memiliki perubahan baru. Buka kembali untuk mencoba lagi."
 }

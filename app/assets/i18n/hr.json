@@ -234,5 +234,10 @@
   "编辑": "Uredi",
   "保存": "Spremi",
   "编辑原文": "Uredi izvorni tekst",
-  "编辑译文": "Uredi prijevod"
+  "编辑译文": "Uredi prijevod",
+  "译文语言": "Jezik prijevoda",
+  "自动重译，LecSync 按字符计费。": "Automatski ponovni prijevod. LecSync naplaćuje po znaku.",
+  "翻译仍在处理中，请稍后再次保存。": "Prijevod je još u tijeku. Uskoro ponovno spremite.",
+  "原文超过 2,000 字符，无法自动重译。": "Izvornik prelazi 2.000 znakova i ne može se automatski ponovno prevesti.",
+  "字幕已有新的修改，请重新打开后重试。": "Ovaj odlomak ima novije izmjene. Ponovno ga otvorite i pokušajte."
 }
