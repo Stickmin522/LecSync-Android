@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automātiska atkārtota tulkošana. LecSync iekasē maksu par rakstzīmi.",
   "翻译仍在处理中，请稍后再次保存。": "Tulkošana vēl turpinās. Pēc brīža saglabājiet vēlreiz.",
   "原文超过 2,000 字符，无法自动重译。": "Oriģināls pārsniedz 2 000 rakstzīmes, un to nevar automātiski pārtulkot vēlreiz.",
-  "字幕已有新的修改，请重新打开后重试。": "Šajā rindkopā ir jaunāki labojumi. Atveriet to vēlreiz un mēģiniet atkārtoti."
+  "字幕已有新的修改，请重新打开后重试。": "Šajā rindkopā ir jaunāki labojumi. Atveriet to vēlreiz un mēģiniet atkārtoti.",
+  "重命名": "Pārdēvēt",
+  "记录名称不能为空": "Ieraksta nosaukums nedrīkst būt tukšs"
 }

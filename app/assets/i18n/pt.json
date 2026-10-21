@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Retradução automática. O LecSync cobra por caractere.",
   "翻译仍在处理中，请稍后再次保存。": "A tradução ainda está em andamento. Salve novamente em instantes.",
   "原文超过 2,000 字符，无法自动重译。": "O original excede 2.000 caracteres e não pode ser retraduzido automaticamente.",
-  "字幕已有新的修改，请重新打开后重试。": "Este parágrafo tem novas alterações. Abra-o novamente para tentar de novo."
+  "字幕已有新的修改，请重新打开后重试。": "Este parágrafo tem novas alterações. Abra-o novamente para tentar de novo.",
+  "重命名": "Renomear",
+  "记录名称不能为空": "O nome da gravação não pode estar vazio"
 }

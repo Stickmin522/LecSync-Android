@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Otomatik yeniden çeviri. LecSync karakter başına ücret alır.",
   "翻译仍在处理中，请稍后再次保存。": "Çeviri hâlâ işleniyor. Biraz sonra yeniden kaydedin.",
   "原文超过 2,000 字符，无法自动重译。": "Orijinal metin 2.000 karakteri aşıyor ve otomatik olarak yeniden çevrilemiyor.",
-  "字幕已有新的修改，请重新打开后重试。": "Bu paragrafta daha yeni düzenlemeler var. Yeniden denemek için tekrar açın."
+  "字幕已有新的修改，请重新打开后重试。": "Bu paragrafta daha yeni düzenlemeler var. Yeniden denemek için tekrar açın.",
+  "重命名": "Yeniden adlandır",
+  "记录名称不能为空": "Kayıt adı boş olamaz"
 }

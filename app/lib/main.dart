@@ -245,6 +245,22 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
   String get phase => state['phase'] as String? ?? 'idle';
   bool get active => !['idle', 'ended'].contains(phase);
   Map<String, dynamic> get record => state;
+  bool get hasRecord => (record['id'] as String? ?? '').isNotEmpty;
+
+  Future<void> renameCurrent() async {
+    final id = record['id'];
+    final updated = await editRecordingName(context, record);
+    if (!mounted || updated == null) return;
+    if (record['id'] == id) {
+      setState(() {
+        state = {...state, 'title': updated['title']};
+        title.text = updated['title'] as String;
+      });
+      sheetRefresh?.call(() {});
+    }
+    await refreshHistory();
+  }
+
   Future<void> refreshHistory() async {
     try {
       final result = await PlatformDesk.call('core', {'op': 'list'});
@@ -291,6 +307,10 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
       );
       if (!mounted) return;
       final ended = value['phase'] == 'ended' && state['phase'] != 'ended';
+      if ((value['id'] as String? ?? '').isNotEmpty &&
+          (state['id'] != value['id'] || state['title'] != value['title'])) {
+        title.text = value['title'] as String? ?? '';
+      }
       setState(() => state = value);
       if (ended) refreshHistory();
       final error = value['error'] as String? ?? '';
@@ -349,8 +369,16 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
             const SizedBox(height: 20),
             TextField(
               controller: title,
-              enabled: !active,
+              readOnly: hasRecord,
+              onTap: hasRecord ? renameCurrent : null,
               decoration: InputDecoration(
+                suffixIcon: hasRecord
+                    ? IconButton(
+                        tooltip: tr('重命名'),
+                        onPressed: renameCurrent,
+                        icon: const Icon(Icons.edit_outlined),
+                      )
+                    : null,
                 labelText: tr('记录名称'),
                 hintText: tr('我的听译记录'),
                 prefixIcon: const Icon(Icons.edit_note_rounded),
@@ -596,10 +624,26 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
           hinges.isNotEmpty &&
           foldedLeft >= 220 &&
           c.maxWidth - foldedLeft - hinges.first.bounds.width - 16 >= 260;
-      final side = c.maxWidth >= 850 || folded;
+      final compact = c.maxHeight < 400;
+      final side =
+          c.maxWidth >= 850 || folded || (c.maxWidth >= 600 && compact);
       final gap = hinges.isEmpty
           ? 20.0
           : math.max(20.0, hinges.first.bounds.width + 16);
+      final nameButton = TextButton.icon(
+        key: const ValueKey('rename-current-recording'),
+        onPressed: renameCurrent,
+        style: TextButton.styleFrom(
+          alignment: AlignmentDirectional.centerStart,
+        ),
+        icon: const Icon(Icons.edit_outlined, size: 18),
+        label: Text(
+          record['title'] as String? ?? tr('我的听译记录'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textDirection: contentDirection(record['title'] as String? ?? ''),
+        ),
+      );
       final captionPane = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -630,6 +674,13 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
+              if (hasRecord && side)
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: math.min(compact ? 180 : 320, c.maxWidth),
+                  ),
+                  child: nameButton,
+                ),
             ],
           ),
           const SizedBox(height: 12),
@@ -678,13 +729,15 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  tr('让声音，成为文字。'),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: hasRecord
+                    ? nameButton
+                    : Text(
+                        tr('让声音，成为文字。'),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
               IconButton(
                 tooltip: tr('录音设置'),
@@ -788,9 +841,9 @@ class _DeskHomeState extends State<DeskHome> with WidgetsBindingObserver {
                             ),
                           ),
                         );
-                        if (mounted && current == true) {
-                          setState(() => page = 0);
-                        }
+                        if (!mounted) return;
+                        if (current == true) setState(() => page = 0);
+                        await refreshHistory();
                       },
                       trailing: IconButton(
                         tooltip: tr('删除记录'),
@@ -1216,7 +1269,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 24),
             const Text(
-              'LingoDesk 1.2.3 · Android 10–17 · ARM64',
+              'LingoDesk 1.2.4 · Android 10–17 · ARM64',
               style: TextStyle(fontSize: 12, height: 1.8),
             ),
           ],

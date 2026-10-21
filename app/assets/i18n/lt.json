@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatinis pakartotinis vertimas. LecSync taiko mokestį už simbolį.",
   "翻译仍在处理中，请稍后再次保存。": "Vertimas dar vykdomas. Netrukus išsaugokite dar kartą.",
   "原文超过 2,000 字符，无法自动重译。": "Originalas viršija 2 000 simbolių ir negali būti automatiškai išverstas iš naujo.",
-  "字幕已有新的修改，请重新打开后重试。": "Šioje pastraipoje yra naujesnių pakeitimų. Atverkite ją iš naujo ir bandykite dar kartą."
+  "字幕已有新的修改，请重新打开后重试。": "Šioje pastraipoje yra naujesnių pakeitimų. Atverkite ją iš naujo ir bandykite dar kartą.",
+  "重命名": "Pervadinti",
+  "记录名称不能为空": "Įrašo pavadinimas negali būti tuščias"
 }

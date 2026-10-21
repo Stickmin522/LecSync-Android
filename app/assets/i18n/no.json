@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatisk ny oversettelse. LecSync tar betalt per tegn.",
   "翻译仍在处理中，请稍后再次保存。": "Oversettelsen behandles fortsatt. Lagre igjen om litt.",
   "原文超过 2,000 字符，无法自动重译。": "Originalen overstiger 2 000 tegn og kan ikke oversettes på nytt automatisk.",
-  "字幕已有新的修改，请重新打开后重试。": "Dette avsnittet har nyere endringer. Åpne det på nytt for å prøve igjen."
+  "字幕已有新的修改，请重新打开后重试。": "Dette avsnittet har nyere endringer. Åpne det på nytt for å prøve igjen.",
+  "重命名": "Gi nytt navn",
+  "记录名称不能为空": "Opptaksnavnet kan ikke være tomt"
 }

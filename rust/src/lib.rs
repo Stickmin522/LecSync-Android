@@ -1,6 +1,7 @@
 mod caption_edits;
 mod captions;
 mod languages;
+mod record_edits;
 mod text_translation;
 mod transport;
 use jni::{
@@ -662,6 +663,7 @@ fn command(input: &str) -> Result<Value, String> {
     match op {
         "snapshot" => Ok(json!(snapshot())),
         "editCaption" => caption_edits::command(&req),
+        "rename" => record_edits::rename(&req),
         "retranslateCaption" => caption_edits::retranslate(&req),
         "warn" | "fail" => {
             let e = ENGINE.lock().map_err(|_| "状态异常")?;

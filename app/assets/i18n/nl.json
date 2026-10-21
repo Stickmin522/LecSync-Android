@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatisch opnieuw vertalen. LecSync rekent per teken.",
   "翻译仍在处理中，请稍后再次保存。": "De vertaling wordt nog verwerkt. Sla over een moment opnieuw op.",
   "原文超过 2,000 字符，无法自动重译。": "Het origineel overschrijdt 2.000 tekens en kan niet automatisch opnieuw worden vertaald.",
-  "字幕已有新的修改，请重新打开后重试。": "Deze alinea heeft nieuwere wijzigingen. Open hem opnieuw om het nogmaals te proberen."
+  "字幕已有新的修改，请重新打开后重试。": "Deze alinea heeft nieuwere wijzigingen. Open hem opnieuw om het nogmaals te proberen.",
+  "重命名": "Naam wijzigen",
+  "记录名称不能为空": "De naam van de opname mag niet leeg zijn"
 }

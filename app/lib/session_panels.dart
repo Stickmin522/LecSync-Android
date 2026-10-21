@@ -57,116 +57,127 @@ class _SessionPanelsState extends State<SessionPanels> {
     }
   }
 
+  Widget recordingActions(bool compact) {
+    final buttons = <Widget>[
+      TextButton.icon(
+        onPressed: busy
+            ? null
+            : () => run(() async {
+                await PlatformDesk.call('play', {'id': widget.record['id']});
+              }),
+        icon: const Icon(Icons.play_circle_outline_rounded),
+        label: Text(tr('回放')),
+      ),
+      TextButton(
+        onPressed: () => run(() async {
+          await PlatformDesk.call('stopPlayback');
+        }),
+        child: Text(tr('停止回放')),
+      ),
+      ...['txt', 'srt', 'json', 'wav'].map(
+        (f) => TextButton(
+          onPressed: busy
+              ? null
+              : () => run(() async {
+                  await PlatformDesk.call('export', {
+                    'id': widget.record['id'],
+                    'format': f,
+                  });
+                }),
+          child: Text(f == 'wav' ? tr('录音 WAV') : f.toUpperCase()),
+        ),
+      ),
+    ];
+    return compact
+        ? SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: buttons),
+          )
+        : Wrap(children: buttons);
+  }
+
   @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 6, 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: SegmentedButton<int>(
-                  showSelectedIcon: false,
-                  style: const ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                    padding: WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(horizontal: 8),
-                    ),
-                    textStyle: WidgetStatePropertyAll(TextStyle(fontSize: 12)),
-                  ),
-                  segments: [
-                    ButtonSegment(value: 0, label: Text(tr('双语字幕'))),
-                    ButtonSegment(value: 1, label: Text(tr('实时纪要'))),
-                  ],
-                  selected: {pane},
-                  onSelectionChanged: (v) => setState(() => pane = v.first),
-                ),
-              ),
-              if (widget.onOverlay != null)
-                IconButton(
-                  tooltip: tr('悬浮字幕'),
-                  onPressed: widget.onOverlay,
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(
-                    Icons.picture_in_picture_alt_rounded,
-                    size: 20,
-                  ),
-                ),
-              if (widget.onModeChanged != null)
-                PopupMenuButton<String>(
-                  tooltip: tr('字幕显示'),
-                  onSelected: widget.onModeChanged,
-                  itemBuilder: (_) => [
-                    PopupMenuItem(value: 'both', child: Text(tr('原文与译文'))),
-                    PopupMenuItem(value: 'source', child: Text(tr('仅原文'))),
-                    PopupMenuItem(value: 'translation', child: Text(tr('仅译文'))),
-                  ],
-                ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: IndexedStack(
-            index: pane,
-            children: [
-              CaptionFeed(
-                key: ValueKey('captions-${widget.record['id']}'),
-                record: widget.record,
-                settings: widget.settings,
-              ),
-              DigestFeed(
-                key: ValueKey('digest-${widget.record['id']}'),
-                record: widget.record,
-                settings: widget.settings,
-                history: widget.saved,
-              ),
-            ],
-          ),
-        ),
-        if (widget.saved)
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Card(
+      margin: EdgeInsets.zero,
+      child: Column(
+        children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
-            child: Wrap(
-              spacing: 0,
-              runSpacing: 0,
+            padding: const EdgeInsets.fromLTRB(12, 12, 6, 10),
+            child: Row(
               children: [
-                TextButton.icon(
-                  onPressed: busy
-                      ? null
-                      : () => run(() async {
-                          await PlatformDesk.call('play', {
-                            'id': widget.record['id'],
-                          });
-                        }),
-                  icon: const Icon(Icons.play_circle_outline_rounded),
-                  label: Text(tr('回放')),
-                ),
-                TextButton(
-                  onPressed: () => run(() async {
-                    await PlatformDesk.call('stopPlayback');
-                  }),
-                  child: Text(tr('停止回放')),
-                ),
-                ...['txt', 'srt', 'json', 'wav'].map(
-                  (f) => TextButton(
-                    onPressed: busy
-                        ? null
-                        : () => run(() async {
-                            await PlatformDesk.call('export', {
-                              'id': widget.record['id'],
-                              'format': f,
-                            });
-                          }),
-                    child: Text(f == 'wav' ? tr('录音 WAV') : f.toUpperCase()),
+                Expanded(
+                  child: SegmentedButton<int>(
+                    showSelectedIcon: false,
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      padding: WidgetStatePropertyAll(
+                        EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      textStyle: WidgetStatePropertyAll(
+                        TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    segments: [
+                      ButtonSegment(value: 0, label: Text(tr('双语字幕'))),
+                      ButtonSegment(value: 1, label: Text(tr('实时纪要'))),
+                    ],
+                    selected: {pane},
+                    onSelectionChanged: (v) => setState(() => pane = v.first),
                   ),
+                ),
+                if (widget.onOverlay != null)
+                  IconButton(
+                    tooltip: tr('悬浮字幕'),
+                    onPressed: widget.onOverlay,
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(
+                      Icons.picture_in_picture_alt_rounded,
+                      size: 20,
+                    ),
+                  ),
+                if (widget.onModeChanged != null)
+                  PopupMenuButton<String>(
+                    tooltip: tr('字幕显示'),
+                    onSelected: widget.onModeChanged,
+                    itemBuilder: (_) => [
+                      PopupMenuItem(value: 'both', child: Text(tr('原文与译文'))),
+                      PopupMenuItem(value: 'source', child: Text(tr('仅原文'))),
+                      PopupMenuItem(
+                        value: 'translation',
+                        child: Text(tr('仅译文')),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: IndexedStack(
+              index: pane,
+              children: [
+                CaptionFeed(
+                  key: ValueKey('captions-${widget.record['id']}'),
+                  record: widget.record,
+                  settings: widget.settings,
+                ),
+                DigestFeed(
+                  key: ValueKey('digest-${widget.record['id']}'),
+                  record: widget.record,
+                  settings: widget.settings,
+                  history: widget.saved,
                 ),
               ],
             ),
           ),
-      ],
+          if (widget.saved)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 10),
+              child: recordingActions(constraints.maxHeight < 260),
+            ),
+        ],
+      ),
     ),
   );
 }
@@ -334,6 +345,102 @@ class _DigestFeedState extends State<DigestFeed> {
   }
 }
 
+Future<Map<String, dynamic>?> editRecordingName(
+  BuildContext context,
+  Map<String, dynamic> record,
+) => showDialog<Map<String, dynamic>>(
+  context: context,
+  barrierDismissible: false,
+  builder: (_) => _RecordingNameEditor(record: record),
+);
+
+class _RecordingNameEditor extends StatefulWidget {
+  const _RecordingNameEditor({required this.record});
+  final Map<String, dynamic> record;
+  @override
+  State<_RecordingNameEditor> createState() => _RecordingNameEditorState();
+}
+
+class _RecordingNameEditorState extends State<_RecordingNameEditor> {
+  late final name = TextEditingController(
+    text: widget.record['title'] as String? ?? '',
+  );
+  bool saving = false;
+  String? error;
+
+  Future<void> save() async {
+    if (saving) return;
+    final value = name.text.trim();
+    if (value.isEmpty) {
+      setState(() => error = tr('记录名称不能为空'));
+      return;
+    }
+    setState(() {
+      saving = true;
+      error = null;
+    });
+    try {
+      final updated = await PlatformDesk.call('core', {
+        'op': 'rename',
+        'id': widget.record['id'],
+        'title': value,
+      });
+      if (mounted) {
+        Navigator.pop(context, Map<String, dynamic>.from(updated as Map));
+      }
+    } catch (e) {
+      if (mounted) setState(() => error = _captionError(e));
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: !saving,
+    child: AlertDialog(
+      scrollable: true,
+      title: Text(tr('重命名')),
+      content: TextField(
+        controller: name,
+        autofocus: true,
+        readOnly: saving,
+        textDirection: contentDirection(name.text),
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => save(),
+        onChanged: (_) => setState(() => error = null),
+        decoration: InputDecoration(
+          labelText: tr('记录名称'),
+          errorText: error,
+          errorMaxLines: 4,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: saving ? null : () => Navigator.pop(context),
+          child: Text(tr('取消')),
+        ),
+        FilledButton(
+          onPressed: saving ? null : save,
+          child: saving
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(tr('保存')),
+        ),
+      ],
+    ),
+  );
+}
+
 class HistoryDetail extends StatefulWidget {
   const HistoryDetail({
     super.key,
@@ -355,10 +462,10 @@ class _HistoryDetailState extends State<HistoryDetail> {
     super.initState();
     sub = PlatformDesk.snapshots.listen((e) {
       if (mounted) {
-        setState(
-          () =>
-              live = Map<String, dynamic>.from(jsonDecode(e as String) as Map),
-        );
+        setState(() {
+          live = Map<String, dynamic>.from(jsonDecode(e as String) as Map);
+          if (live['id'] == record['id']) record = live;
+        });
       }
     });
   }
@@ -374,7 +481,25 @@ class _HistoryDetailState extends State<HistoryDetail> {
   Widget build(BuildContext context) {
     final active = !['idle', 'ended'].contains(live['phase']);
     return Scaffold(
-      appBar: AppBar(title: Text(record['title'] as String? ?? tr('历史录音'))),
+      appBar: AppBar(
+        title: Text(
+          record['title'] as String? ?? tr('历史录音'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: [
+          IconButton(
+            tooltip: tr('重命名'),
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () async {
+              final updated = await editRecordingName(context, record);
+              if (mounted && updated != null) {
+                setState(() => record = {...record, 'title': updated['title']});
+              }
+            },
+          ),
+        ],
+      ),
       body: DisplayFeatureSubScreen(
         anchorPoint: Offset(MediaQuery.sizeOf(context).width / 4, 0),
         child: SafeArea(

@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Ailgyfieithu awtomatig. Mae LecSync yn codi tâl fesul nod.",
   "翻译仍在处理中，请稍后再次保存。": "Mae'r cyfieithiad yn dal i gael ei brosesu. Cadwch eto ymhen ychydig.",
   "原文超过 2,000 字符，无法自动重译。": "Mae'r gwreiddiol yn fwy na 2,000 nod ac ni ellir ei ailgyfieithu'n awtomatig.",
-  "字幕已有新的修改，请重新打开后重试。": "Mae golygiadau mwy diweddar i'r paragraff hwn. Agorwch ef eto i roi cynnig arall arni."
+  "字幕已有新的修改，请重新打开后重试。": "Mae golygiadau mwy diweddar i'r paragraff hwn. Agorwch ef eto i roi cynnig arall arni.",
+  "重命名": "Ailenwi",
+  "记录名称不能为空": "Ni all enw’r recordiad fod yn wag"
 }

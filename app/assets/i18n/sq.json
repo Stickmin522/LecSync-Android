@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Ripërkthim automatik. LecSync tarifon për karakter.",
   "翻译仍在处理中，请稍后再次保存。": "Përkthimi është ende në proces. Ruajeni sërish pas pak.",
   "原文超过 2,000 字符，无法自动重译。": "Origjinali tejkalon 2 000 karaktere dhe nuk mund të ripërkthehet automatikisht.",
-  "字幕已有新的修改，请重新打开后重试。": "Ky paragraf ka ndryshime të reja. Rihapeni për të provuar sërish."
+  "字幕已有新的修改，请重新打开后重试。": "Ky paragraf ka ndryshime të reja. Rihapeni për të provuar sërish.",
+  "重命名": "Riemërto",
+  "记录名称不能为空": "Emri i regjistrimit nuk mund të jetë bosh"
 }

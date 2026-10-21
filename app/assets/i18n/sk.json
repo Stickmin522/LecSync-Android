@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatický nový preklad. LecSync účtuje podľa počtu znakov.",
   "翻译仍在处理中，请稍后再次保存。": "Preklad sa ešte spracúva. O chvíľu uložte znova.",
   "原文超过 2,000 字符，无法自动重译。": "Originál presahuje 2 000 znakov a nemožno ho automaticky znova preložiť.",
-  "字幕已有新的修改，请重新打开后重试。": "Tento odsek má novšie úpravy. Znova ho otvorte a skúste to opäť."
+  "字幕已有新的修改，请重新打开后重试。": "Tento odsek má novšie úpravy. Znova ho otvorte a skúste to opäť.",
+  "重命名": "Premenovať",
+  "记录名称不能为空": "Názov nahrávky nesmie byť prázdny"
 }

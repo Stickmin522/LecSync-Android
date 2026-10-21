@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatski ponovni prijevod. LecSync naplaćuje po znaku.",
   "翻译仍在处理中，请稍后再次保存。": "Prijevod je još u toku. Uskoro ponovo sačuvajte.",
   "原文超过 2,000 字符，无法自动重译。": "Izvornik prelazi 2.000 znakova i ne može se automatski ponovo prevesti.",
-  "字幕已有新的修改，请重新打开后重试。": "Ovaj odlomak ima nove izmjene. Ponovo ga otvorite i pokušajte."
+  "字幕已有新的修改，请重新打开后重试。": "Ovaj odlomak ima nove izmjene. Ponovo ga otvorite i pokušajte.",
+  "重命名": "Preimenuj",
+  "记录名称不能为空": "Naziv snimka ne može biti prazan"
 }

@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Outomatiese hervertaling. LecSync hef per karakter.",
   "翻译仍在处理中，请稍后再次保存。": "Vertaling is nog aan die gang. Stoor binnekort weer.",
   "原文超过 2,000 字符，无法自动重译。": "Die oorspronklike teks oorskry 2 000 karakters en kan nie outomaties hervertaal word nie.",
-  "字幕已有新的修改，请重新打开后重试。": "Hierdie paragraaf het nuwe wysigings. Maak dit weer oop om weer te probeer."
+  "字幕已有新的修改，请重新打开后重试。": "Hierdie paragraaf het nuwe wysigings. Maak dit weer oop om weer te probeer.",
+  "重命名": "Hernoem",
+  "记录名称不能为空": "Opnamenaam mag nie leeg wees nie"
 }

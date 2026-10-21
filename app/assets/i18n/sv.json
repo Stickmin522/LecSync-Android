@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Automatisk nyöversättning. LecSync debiterar per tecken.",
   "翻译仍在处理中，请稍后再次保存。": "Översättningen bearbetas fortfarande. Spara igen om en stund.",
   "原文超过 2,000 字符，无法自动重译。": "Originalet överstiger 2 000 tecken och kan inte översättas om automatiskt.",
-  "字幕已有新的修改，请重新打开后重试。": "Det här stycket har nyare ändringar. Öppna det igen för att försöka på nytt."
+  "字幕已有新的修改，请重新打开后重试。": "Det här stycket har nyare ändringar. Öppna det igen för att försöka på nytt.",
+  "重命名": "Byt namn",
+  "记录名称不能为空": "Inspelningens namn får inte vara tomt"
 }

@@ -26,7 +26,7 @@ rustup target add aarch64-linux-android
 .\build.ps1
 ```
 
-`FLUTTER_ROOT` is optional when Flutter is on PATH. `ANDROID_SDK_ROOT` is accepted when `ANDROID_HOME` is unset. The output is `outputs/lingodesk-1.2.3-arm64.apk`.
+`FLUTTER_ROOT` is optional when Flutter is on PATH. `ANDROID_SDK_ROOT` is accepted when `ANDROID_HOME` is unset. The output is `outputs/lingodesk-1.2.4-arm64.apk`.
 
 The first build creates a signing key in `.signing/`. Keep it private and use it for subsequent builds. Your signature differs from the published APK, so your build cannot update that installation. Change `applicationId` in `app/android/app/build.gradle.kts` if you want a separate installation.
 
@@ -46,7 +46,7 @@ cargo test --manifest-path rust/Cargo.toml --locked
 To check your APK, obtain its signing certificate fingerprint and pass it to the release checker:
 
 ```powershell
-& "$env:ANDROID_HOME\build-tools\37.0.0\apksigner.bat" verify --print-certs 'outputs\lingodesk-1.2.3-arm64.apk'
+& "$env:ANDROID_HOME\build-tools\37.0.0\apksigner.bat" verify --print-certs 'outputs\lingodesk-1.2.4-arm64.apk'
 python tests/verify_release.py --certificate-sha256 YOUR_PUBLIC_CERTIFICATE_SHA256
 ```
 

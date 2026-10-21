@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Tự động dịch lại. LecSync tính phí theo ký tự.",
   "翻译仍在处理中，请稍后再次保存。": "Bản dịch vẫn đang được xử lý. Hãy lưu lại sau ít phút.",
   "原文超过 2,000 字符，无法自动重译。": "Văn bản gốc vượt quá 2.000 ký tự và không thể tự động dịch lại.",
-  "字幕已有新的修改，请重新打开后重试。": "Đoạn này có chỉnh sửa mới hơn. Hãy mở lại để thử lại."
+  "字幕已有新的修改，请重新打开后重试。": "Đoạn này có chỉnh sửa mới hơn. Hãy mở lại để thử lại.",
+  "重命名": "Đổi tên",
+  "记录名称不能为空": "Tên bản ghi không được để trống"
 }

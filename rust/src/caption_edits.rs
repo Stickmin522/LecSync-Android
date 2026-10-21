@@ -1,4 +1,7 @@
 //! Manual corrections are an overlay: matching continues to use the original stream.
+use super::record_edits::update;
+#[cfg(test)]
+use super::record_edits::update_shared;
 use super::*;
 
 #[derive(Clone, Serialize, Deserialize, Default)]
@@ -185,61 +188,9 @@ pub(super) fn render(raw: &View) -> View {
     rendered
 }
 
-fn update_shared(
-    view: &Arc<Mutex<View>>,
-    directory: &str,
-    change: &mut impl FnMut(&mut View) -> Result<(), String>,
-) -> Result<View, String> {
-    let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
-    let mut raw = view.lock().map_err(|_| "字幕状态读取失败")?;
-    let mut updated = raw.clone();
-    change(&mut updated)?;
-    write_record(&updated, directory)?;
-    *raw = updated.clone();
-    if raw.phase == "ended" {
-        if let Ok(mut last) = LAST.lock() {
-            *last = updated.clone();
-        }
-    }
-    Ok(updated)
-}
-
 #[cfg(test)]
 fn apply_shared(view: &Arc<Mutex<View>>, edit: &Edit<'_>, directory: &str) -> Result<View, String> {
     update_shared(view, directory, &mut |v| edit.apply(v)).map(|v| render(&v))
-}
-
-// Network requests never hold the recording, checkpoint, or file locks.
-fn update(
-    req: &Value,
-    mut change: impl FnMut(&mut View) -> Result<(), String>,
-) -> Result<View, String> {
-    let id = req["id"].as_str().ok_or("缺少记录 ID")?;
-    if !valid_id(id) {
-        return Err("无效记录 ID".into());
-    }
-    let directory = req["directory"].as_str().ok_or("缺少目录")?;
-    let engine = ENGINE.lock().map_err(|_| "状态异常")?;
-    if let Some(engine) = engine.as_ref() {
-        if engine.view.lock().map_err(|_| "字幕状态读取失败")?.id == id {
-            return update_shared(&engine.view, directory, &mut change);
-        }
-    }
-    drop(engine);
-    let _writer = FILE_WRITE_LOCK.lock().map_err(|_| "记录保存状态异常")?;
-    let mut last = LAST.lock().map_err(|_| "字幕状态读取失败")?;
-    if last.id == id {
-        let mut updated = last.clone();
-        change(&mut updated)?;
-        write_record(&updated, directory)?;
-        *last = updated.clone();
-        return Ok(updated);
-    }
-    drop(last);
-    let mut updated = load(directory, id)?;
-    change(&mut updated)?;
-    write_record(&updated, directory)?;
-    Ok(updated)
 }
 
 pub(super) fn command(req: &Value) -> Result<Value, String> {
@@ -958,6 +909,20 @@ mod tests {
         assert_eq!(updated["phase"], "recording");
         assert_eq!(updated["durationMs"], 9876);
         assert_eq!(snapshot().captions[0].segment.text, "Live corrected");
+        // Renaming a live/paused recording must not change the phase, captions,
+        // duration, or audio, nor send any recording control message.
+        for phase in ["recording", "paused"] {
+            shared.lock().unwrap().phase = phase.into();
+            let mut expected = json!(render(&shared.lock().unwrap()));
+            expected["title"] = json!(format!("Renamed while {phase}"));
+            let renamed = super::super::command(&json!({"op":"rename", "id":"9206", "directory":directory.path(), "title":format!("  Renamed while {phase}  ")}).to_string()).unwrap();
+            assert_eq!(renamed, expected);
+            assert_eq!(snapshot().title, format!("Renamed while {phase}"));
+            assert_eq!(
+                load(directory.path(), "9206").unwrap().title,
+                format!("Renamed while {phase}")
+            );
+        }
         shared.lock().unwrap().phase = "ended".into();
         let req = request(
             "9206",
@@ -969,6 +934,12 @@ mod tests {
         );
         super::super::command(&req.to_string()).unwrap();
         let ended_engine = ENGINE.lock().unwrap().take();
+        super::super::command(&json!({"op":"rename", "id":"9206", "directory":directory.path(), "title":"Saved recording name"}).to_string()).unwrap();
+        assert_eq!(snapshot().title, "Saved recording name");
+        assert_eq!(
+            load(directory.path(), "9206").unwrap().title,
+            "Saved recording name"
+        );
         assert_eq!(
             snapshot().captions[0].segment.translation,
             "Ended corrected"

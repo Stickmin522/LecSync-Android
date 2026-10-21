@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Awtomatikong muling pagsasalin. Naniningil ang LecSync bawat karakter.",
   "翻译仍在处理中，请稍后再次保存。": "Pinoproseso pa ang pagsasalin. I-save muli makalipas ang ilang sandali.",
   "原文超过 2,000 字符，无法自动重译。": "Lampas sa 2,000 karakter ang orihinal at hindi maaaring awtomatikong isalin muli.",
-  "字幕已有新的修改，请重新打开后重试。": "May mas bagong pagbabago sa talatang ito. Buksan itong muli upang subukan ulit."
+  "字幕已有新的修改，请重新打开后重试。": "May mas bagong pagbabago sa talatang ito. Buksan itong muli upang subukan ulit.",
+  "重命名": "Palitan ang pangalan",
+  "记录名称不能为空": "Hindi maaaring blangko ang pangalan ng recording"
 }

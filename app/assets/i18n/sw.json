@@ -239,5 +239,7 @@
   "自动重译，LecSync 按字符计费。": "Tafsiri upya kiotomatiki. LecSync hutoza kwa kila herufi.",
   "翻译仍在处理中，请稍后再次保存。": "Tafsiri bado inachakatwa. Hifadhi tena baada ya muda mfupi.",
   "原文超过 2,000 字符，无法自动重译。": "Maandishi asili yanazidi herufi 2,000 na hayawezi kutafsiriwa upya kiotomatiki.",
-  "字幕已有新的修改，请重新打开后重试。": "Aya hii ina mabadiliko mapya zaidi. Ifungue tena ili ujaribu upya."
+  "字幕已有新的修改，请重新打开后重试。": "Aya hii ina mabadiliko mapya zaidi. Ifungue tena ili ujaribu upya.",
+  "重命名": "Badilisha jina",
+  "记录名称不能为空": "Jina la rekodi haliwezi kuwa tupu"
 }
